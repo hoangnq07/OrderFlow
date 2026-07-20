@@ -727,12 +727,21 @@ Never claim that tests passed unless they were actually run successfully.
 Branch naming:
 
 ```text
-feat/ofl-b-101-category-entity
-feat/ofl-f-201-cart-component
-test/ofl-t-301-order-integration
-fix/order-stock-locking
-chore/project-bootstrap
-docs/readme-setup
+feature/OFL-XXX-description
+bugfix/OFL-XXX-description
+test/OFL-XXX-description
+chore/OFL-XXX-description
+docs/OFL-XXX-description
+```
+
+Examples:
+```text
+feature/OFL-002-category-entity
+feature/OFL-003-cart-component
+test/OFL-004-order-integration
+bugfix/OFL-005-order-stock-locking
+chore/OFL-001-project-bootstrap
+docs/OFL-002-readme-setup
 ```
 
 Commit convention:
