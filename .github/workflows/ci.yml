@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Security Vulnerability Scan
+        run: |
+          echo "Scanning dependencies for security vulnerabilities..."
+          # Run npm audit for frontend security scan
+          cd frontend && npm audit --audit-level=high || true
+
+  backend-check:
+    name: Backend Java Spring Boot Check
+    needs: security-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Backend with Maven
+        working-directory: ./backend
+        run: |
+          chmod +x mvnw
+          ./mvnw clean compile -B
+
+  frontend-check:
+    name: Frontend Angular Check
+    needs: security-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend (Angular)
+        working-directory: ./frontend
+        run: npm run build
