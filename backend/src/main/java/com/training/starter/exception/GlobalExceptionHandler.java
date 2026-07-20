@@ -54,6 +54,18 @@ public class GlobalExceptionHandler {
         return ApiResponse.error("Invalid username or password");
     }
 
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse<Void> handleDisabled(org.springframework.security.authentication.DisabledException ex) {
+        return ApiResponse.error("Account is disabled");
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.LockedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse<Void> handleLocked(org.springframework.security.authentication.LockedException ex) {
+        return ApiResponse.error("Account is locked");
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ApiResponse<Void> handleAccessDenied(AccessDeniedException ex) {

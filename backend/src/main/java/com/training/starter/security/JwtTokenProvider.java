@@ -25,19 +25,20 @@ public class JwtTokenProvider {
     private long refreshTokenExpiration;
 
     public String generateAccessToken(String username) {
-        return generateToken(username, accessTokenExpiration);
+        return generateToken(username, "access", accessTokenExpiration);
     }
 
     public String generateRefreshToken(String username) {
-        return generateToken(username, refreshTokenExpiration);
+        return generateToken(username, "refresh", refreshTokenExpiration);
     }
 
-    private String generateToken(String username, long expiration) {
+    private String generateToken(String username, String tokenType, long expiration) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
                 .subject(username)
+                .claim("token_type", tokenType)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -55,6 +56,20 @@ public class JwtTokenProvider {
                     .build()
                     .parseSignedClaims(token);
             return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public boolean isTokenValid(String token, String expectedType) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            String tokenType = claims.get("token_type", String.class);
+            return expectedType.equalsIgnoreCase(tokenType);
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }

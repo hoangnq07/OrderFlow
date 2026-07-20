@@ -38,6 +38,16 @@ export class AuthService {
     );
   }
 
+  refreshToken(token: string): Observable<ApiResponse<AuthResponse>> {
+    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/refresh-token`, { refreshToken: token }).pipe(
+      tap(res => {
+        if (res.success && res.data) {
+          this.storeTokens(res.data);
+        }
+      })
+    );
+  }
+
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');

@@ -142,12 +142,14 @@ class UserServiceTest {
         // Given
         var entity = buildUser(1L, "testuser", "test@example.com");
         when(userRepository.findById(1L)).thenReturn(Optional.of(entity));
+        when(userRepository.save(entity)).thenReturn(entity);
 
         // When
         userService.delete(1L);
 
         // Then
-        verify(userRepository).delete(entity);
+        assertThat(entity.isActive()).isFalse();
+        verify(userRepository).save(entity);
     }
 
     private User buildUser(Long id, String username, String email) {
