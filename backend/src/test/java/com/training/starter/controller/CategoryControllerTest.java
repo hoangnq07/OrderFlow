@@ -1,0 +1,85 @@
+package com.training.starter.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.training.starter.dto.request.CreateCategoryRequest;
+import com.training.starter.dto.response.CategoryResponse;
+import com.training.starter.security.JwtAuthenticationFilter;
+import com.training.starter.service.CategoryService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(CategoryController.class)
+@AutoConfigureMockMvc(addFilters = false)
+class CategoryControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private CategoryService categoryService;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Test
+    void getAll_validRequest_returnsListOfCategories() throws Exception {
+        // Given
+        var response = new CategoryResponse(1L, "Electronics", "electronics", LocalDateTime.now(), LocalDateTime.now());
+        when(categoryService.getAll()).thenReturn(List.of(response));
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[0].name").value("Electronics"))
+                .andExpect(jsonPath("$.data[0].slug").value("electronics"));
+    }
+
+    @Test
+    void create_validRequest_returns201AndCategory() throws Exception {
+        // Given
+        var request = new CreateCategoryRequest("Electronics", "electronics");
+        var response = new CategoryResponse(1L, "Electronics", "electronics", LocalDateTime.now(), LocalDateTime.now());
+        when(categoryService.create(any(CreateCategoryRequest.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.message").value("Category created"));
+    }
+
+    @Test
+    void create_invalidRequest_returns400() throws Exception {
+        // Given - empty name
+        var request = new CreateCategoryRequest("", "");
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+}

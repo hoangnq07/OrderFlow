@@ -1,6 +1,11 @@
-# Story 1.2: product-and-category-rest-endpoints
+---
+baseline_commit: c6cf45f40d419535a11d1fd9a72d583a6e59791e
+---
+# Story 1.2: Product and Category REST Endpoints
 
-Status: review
+Status: done
+
+<!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
 ## Story
 
