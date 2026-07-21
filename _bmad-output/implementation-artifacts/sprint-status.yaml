@@ -1,5 +1,5 @@
 # generated: 2026-07-20
-# last_updated: 2026-07-20
+# last_updated: 2026-07-21
 # project: OrderFlow
 # project_key: NOKEY
 # tracking_system: file-system
@@ -24,7 +24,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-07-20
-last_updated: 2026-07-20
+last_updated: 2026-07-21
 project: OrderFlow
 project_key: NOKEY
 tracking_system: file-system
@@ -33,7 +33,7 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
   epic-1: in-progress
   1-1-entity-migration-setup-for-category-and-product: done
-  1-2-product-and-category-rest-endpoints: backlog
+  1-2-product-and-category-rest-endpoints: done
   1-3-angular-product-catalog-integration-and-navigation: backlog
   1-4-angular-product-form-component-and-category-unit-tests: backlog
   1-5-product-unit-tests-and-redis-cart-service: backlog
