@@ -38,12 +38,12 @@ development_status:
   1-4-angular-product-form-component-and-category-unit-tests: done
   1-5-product-unit-tests-and-redis-cart-service: done
   epic-1-retrospective: optional
-  epic-2: in-progress
+  epic-2: done
   2-1-order-listing-optimization-and-cart-rest-endpoints: done
   2-2-angular-cart-component-ui: done
   2-3-customer-order-ui-and-rabbitmq-event-infrastructure: done
   2-4-order-creation-unit-tests-and-rabbitmq-consumers: done
-  2-5-postgresql-full-text-search-and-redis-product-detail-cache: backlog
+  2-5-postgresql-full-text-search-and-redis-product-detail-cache: done
   epic-2-retrospective: optional
   epic-3: backlog
   3-1-api-rate-limiting-and-admin-order-backend-apis: backlog
