@@ -46,9 +46,13 @@ import { Observable } from 'rxjs';
             <mat-icon matListItemIcon [matBadge]="cartCount$ | async" [matBadgeHidden]="(cartCount$ | async) === 0" matBadgeColor="accent">shopping_cart</mat-icon>
             <span matListItemTitle>Shopping Cart</span>
           </a>
-          <a mat-list-item routerLink="/users" routerLinkActive="active">
+          <a mat-list-item *ngIf="authService.getRole() === 'ADMIN'" routerLink="/users" routerLinkActive="active">
             <mat-icon matListItemIcon>people</mat-icon>
             <span matListItemTitle>Users</span>
+          </a>
+          <a mat-list-item *ngIf="authService.getRole() === 'ADMIN'" routerLink="/admin/orders" routerLinkActive="active">
+            <mat-icon matListItemIcon>receipt_long</mat-icon>
+            <span matListItemTitle>Admin Orders</span>
           </a>
         </mat-nav-list>
       </mat-sidenav>

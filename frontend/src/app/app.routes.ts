@@ -45,6 +45,11 @@ export const routes: Routes = [
         path: 'users/:id/edit',
         loadComponent: () => import('./features/users/user-form/user-form.component').then(m => m.UserFormComponent),
         canActivate: [adminGuard]
+      },
+      {
+        path: 'admin/orders',
+        loadComponent: () => import('./features/admin/orders/admin-order-list/admin-order-list.component').then(m => m.AdminOrderListComponent),
+        canActivate: [adminGuard]
       }
     ]
   },
