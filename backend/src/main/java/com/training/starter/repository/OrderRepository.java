@@ -26,4 +26,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @EntityGraph(attributePaths = {"user", "items"})
     Page<Order> findByUserId(Long userId, Pageable pageable);
+
+    long countByStatus(OrderStatus status);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status != com.training.starter.enums.OrderStatus.CANCELLED")
+    java.math.BigDecimal calculateTotalRevenue();
 }

@@ -11,4 +11,6 @@ public interface OrderService {
     PageResponse<OrderResponse> getAdminOrders(OrderStatus status, Pageable pageable);
 
     OrderResponse updateOrderStatusByAdmin(Long orderId, UpdateOrderStatusRequest request);
+
+    com.training.starter.dto.response.DashboardStatsResponse getDashboardStats();
 }
