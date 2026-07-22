@@ -6,6 +6,8 @@ export interface CategoryResponse {
   updatedAt: string;
 }
 
+export type Category = CategoryResponse;
+
 export interface CreateCategoryRequest {
   name: string;
   slug: string;

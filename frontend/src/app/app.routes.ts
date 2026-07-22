@@ -18,6 +18,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/products/product-list/product-list.component').then(m => m.ProductListComponent)
       },
       {
+        path: 'products/new',
+        loadComponent: () => import('./features/products/product-form/product-form.component').then(m => m.ProductFormComponent),
+        canActivate: [adminGuard]
+      },
+      {
+        path: 'products/:id/edit',
+        loadComponent: () => import('./features/products/product-form/product-form.component').then(m => m.ProductFormComponent),
+        canActivate: [adminGuard]
+      },
+      {
         path: 'users',
         loadComponent: () => import('./features/users/user-list/user-list.component').then(m => m.UserListComponent),
         canActivate: [adminGuard]

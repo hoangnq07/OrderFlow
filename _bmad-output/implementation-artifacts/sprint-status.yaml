@@ -35,7 +35,7 @@ development_status:
   1-1-entity-migration-setup-for-category-and-product: done
   1-2-product-and-category-rest-endpoints: done
   1-3-angular-product-catalog-integration-and-navigation: done
-  1-4-angular-product-form-component-and-category-unit-tests: backlog
+  1-4-angular-product-form-component-and-category-unit-tests: done
   1-5-product-unit-tests-and-redis-cart-service: backlog
   epic-1-retrospective: optional
   epic-2: backlog
