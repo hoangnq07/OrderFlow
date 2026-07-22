@@ -13,23 +13,34 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String EXCHANGE_NAME = "training.exchange";
-    public static final String QUEUE_NAME = "training.queue";
-    public static final String ROUTING_KEY = "training.routing.key";
+    public static final String ORDER_EXCHANGE = "order.exchange";
+    public static final String PAYMENT_QUEUE = "payment.process.queue";
+    public static final String NOTIFICATION_QUEUE = "notification.email.queue";
+    public static final String ORDER_CREATED_ROUTING_KEY = "order.created";
 
     @Bean
-    public TopicExchange trainingExchange() {
-        return new TopicExchange(EXCHANGE_NAME);
+    public TopicExchange orderExchange() {
+        return new TopicExchange(ORDER_EXCHANGE);
     }
 
     @Bean
-    public Queue trainingQueue() {
-        return QueueBuilder.durable(QUEUE_NAME).build();
+    public Queue paymentQueue() {
+        return QueueBuilder.durable(PAYMENT_QUEUE).build();
     }
 
     @Bean
-    public Binding trainingBinding(Queue trainingQueue, TopicExchange trainingExchange) {
-        return BindingBuilder.bind(trainingQueue).to(trainingExchange).with(ROUTING_KEY);
+    public Queue notificationQueue() {
+        return QueueBuilder.durable(NOTIFICATION_QUEUE).build();
+    }
+
+    @Bean
+    public Binding paymentBinding(Queue paymentQueue, TopicExchange orderExchange) {
+        return BindingBuilder.bind(paymentQueue).to(orderExchange).with(ORDER_CREATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding notificationBinding(Queue notificationQueue, TopicExchange orderExchange) {
+        return BindingBuilder.bind(notificationQueue).to(orderExchange).with(ORDER_CREATED_ROUTING_KEY);
     }
 
     @Bean
