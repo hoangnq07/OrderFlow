@@ -48,7 +48,7 @@ development_status:
   epic-3: in-progress
   3-1-api-rate-limiting-and-admin-order-backend-apis: done
   3-2-e2e-integration-test-and-admin-order-management-ui: done
-  3-3-database-query-tuning-and-admin-dashboard-ui: backlog
+  3-3-database-query-tuning-and-admin-dashboard-ui: done
   3-4-concurrency-stock-lock-testing-and-rabbitmq-dlq-retry-setup: backlog
   3-5-concurrency-lock-verification-and-swagger-testcontainers-completion: backlog
   epic-3-retrospective: optional

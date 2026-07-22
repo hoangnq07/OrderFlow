@@ -12,6 +12,11 @@ import com.training.starter.repository.OrderRepository;
 import com.training.starter.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.training.starter.dto.response.DashboardStatsResponse;
+import com.training.starter.enums.Role;
+import com.training.starter.repository.ProductRepository;
+import com.training.starter.repository.UserRepository;
+import java.math.BigDecimal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,7 +28,29 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final OrderMapper orderMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public DashboardStatsResponse getDashboardStats() {
+        long totalOrders = orderRepository.count();
+        BigDecimal totalRevenue = orderRepository.calculateTotalRevenue();
+        long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
+        long completedOrders = orderRepository.countByStatus(OrderStatus.DELIVERED);
+        long totalProducts = productRepository.countByActiveTrue();
+        long totalCustomers = userRepository.countByRole(Role.USER);
+
+        return new DashboardStatsResponse(
+                totalOrders,
+                totalRevenue,
+                pendingOrders,
+                completedOrders,
+                totalProducts,
+                totalCustomers
+        );
+    }
 
     @Override
     @Transactional(readOnly = true)
