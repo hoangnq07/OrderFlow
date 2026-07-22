@@ -91,4 +91,20 @@ public class ProductServiceImpl implements ProductService {
         product.setActive(false);
         productRepository.save(product);
     }
+
+    @Override
+    @CacheEvict(value = "products", key = "#productId")
+    @Transactional
+    public boolean decreaseStock(Long productId, Integer quantity) {
+        Product product = productRepository.findByIdForUpdate(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", productId));
+
+        if (product.getStock() < quantity) {
+            return false;
+        }
+
+        product.setStock(product.getStock() - quantity);
+        productRepository.save(product);
+        return true;
+    }
 }
