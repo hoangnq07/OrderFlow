@@ -28,6 +28,10 @@ export const routes: Routes = [
         canActivate: [adminGuard]
       },
       {
+        path: 'cart',
+        loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent)
+      },
+      {
         path: 'users',
         loadComponent: () => import('./features/users/user-list/user-list.component').then(m => m.UserListComponent),
         canActivate: [adminGuard]

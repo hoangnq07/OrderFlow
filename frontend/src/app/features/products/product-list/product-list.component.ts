@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ProductResponse } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
+import { CartService } from '../../../core/services/cart.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
@@ -88,6 +89,9 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let product">
+          <button mat-icon-button color="accent" (click)="onAddToCart(product)" [disabled]="!product.active || product.stock <= 0" title="Add to Cart">
+            <mat-icon>add_shopping_cart</mat-icon>
+          </button>
           <a mat-icon-button [routerLink]="['/products', product.id, 'edit']" title="Edit Product">
             <mat-icon>edit</mat-icon>
           </a>
@@ -152,6 +156,7 @@ export class ProductListComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
+    private cartService: CartService,
     private notification: NotificationService,
     private dialog: MatDialog
   ) {}
@@ -173,6 +178,19 @@ export class ProductListComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.notification.error('Failed to load product catalog');
+      }
+    });
+  }
+
+  onAddToCart(product: ProductResponse): void {
+    this.cartService.addToCart(product.id, 1).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.notification.success(`Added "${product.name}" to shopping cart!`);
+        }
+      },
+      error: (err) => {
+        this.notification.error(err.error?.message || 'Failed to add product to cart');
       }
     });
   }
