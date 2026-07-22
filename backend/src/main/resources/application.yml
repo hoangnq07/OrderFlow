@@ -36,6 +36,14 @@ spring:
     port: ${MQ_PORT:5672}
     username: ${MQ_USER:guest}
     password: ${MQ_PASS:guest}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+          multiplier: 2.0
+          max-interval: 10000ms
 
   mail:
     host: ${MAIL_HOST:localhost}
