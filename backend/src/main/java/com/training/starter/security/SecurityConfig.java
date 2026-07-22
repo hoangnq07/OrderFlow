@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitingFilter rateLimitingFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -48,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/cart/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/v1/orders/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
+                .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .build();

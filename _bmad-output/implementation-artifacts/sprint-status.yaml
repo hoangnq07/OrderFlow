@@ -45,8 +45,8 @@ development_status:
   2-4-order-creation-unit-tests-and-rabbitmq-consumers: done
   2-5-postgresql-full-text-search-and-redis-product-detail-cache: backlog
   epic-2-retrospective: optional
-  epic-3: backlog
-  3-1-api-rate-limiting-and-admin-order-backend-apis: backlog
+  epic-3: in-progress
+  3-1-api-rate-limiting-and-admin-order-backend-apis: done
   3-2-e2e-integration-test-and-admin-order-management-ui: backlog
   3-3-database-query-tuning-and-admin-dashboard-ui: backlog
   3-4-concurrency-stock-lock-testing-and-rabbitmq-dlq-retry-setup: backlog
