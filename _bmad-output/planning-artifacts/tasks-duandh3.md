@@ -21,7 +21,7 @@
 
 ---
 
-### Task D-02 (Day 2 - Tue, 2026-07-21): Category Backend Endpoints & Flyway Migrations
+### Task D-02 (Day 2 - Tue, 2026-07-21): Category Backend Endpoints & Flyway Migrations `[Completed]`
 - **Title**: Implement Category REST Endpoints and Prepare Flyway Migrations V3 & V4
 - **IDs**: REQ-OFL-B-107, REQ-OFL-B-108
 - **Tasks**:
@@ -34,7 +34,7 @@
 
 ---
 
-### Task D-03 (Day 3 - Wed, 2026-07-22): Angular Product & Category Table View Component
+### Task D-03 (Day 3 - Wed, 2026-07-22): Angular Product & Category Table View Component `[Completed]`
 - **Title**: Create Angular ProductListComponent Displaying Products and Categories
 - **IDs**: REQ-OFL-F-101
 - **Tasks**:

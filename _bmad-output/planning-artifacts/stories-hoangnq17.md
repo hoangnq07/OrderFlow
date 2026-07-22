@@ -21,7 +21,7 @@
 
 ---
 
-### Story H-02 (Day 2 - Tue, 2026-07-21): Product Catalog Backend REST Endpoints
+### Story H-02 (Day 2 - Tue, 2026-07-21): Product Catalog Backend REST Endpoints `[Completed]`
 - **Title**: Implement paginated Product List API and Product REST Endpoints
 - **IDs**: REQ-OFL-B-105, REQ-OFL-B-106
 - **Tasks**:
@@ -34,7 +34,7 @@
 
 ---
 
-### Story H-03 (Day 3 - Wed, 2026-07-22): Angular Product Catalog Service & Navigation
+### Story H-03 (Day 3 - Wed, 2026-07-22): Angular Product Catalog Service & Navigation `[Completed]`
 - **Title**: Create Angular ProductService and register Sidebar Navigation paths
 - **IDs**: REQ-OFL-F-103, REQ-OFL-F-104
 - **Tasks**:
@@ -65,7 +65,7 @@
 - **IDs**: REQ-OFL-T-101
 - **Tasks**:
   1. Write JUnit 5 & Mockito unit tests for `ProductService` implementation (min 5 tests).
-  2. Test success cases: create (valid + duplicate slug), getById (found + not found), update, delete.
+  2. Test success cases: create (valid + duplicate slug), getById (found + not found), update, soft delete.
 - **Acceptance Criteria**:
   - Minimum 5 unit tests for ProductService pass 100%.
 
@@ -73,15 +73,15 @@
 
 ## Week 2: Shopping Cart, Order Placement & Transactions
 
-### Story H-06 (Day 6 - Mon, 2026-07-27): Order REST Endpoints & N+1 Query Optimization
-- **Title**: Implement Order REST Endpoints and Optimize N+1 Query Issue
+### Story H-06 (Day 6 - Mon, 2026-07-27): Customer Order REST Endpoints & N+1 Query Optimization
+- **Title**: Implement Customer Order REST Endpoints and Optimize N+1 Query Issue
 - **IDs**: REQ-OFL-B-204, REQ-OFL-B-205
 - **Tasks**:
-  1. Create `OrderController` (`POST /api/v1/orders`, `GET /api/v1/orders` my orders paginated, `GET /api/v1/orders/{id}`, `PUT /api/v1/orders/{id}/cancel`).
+  1. Create `OrderController` (`GET /api/v1/orders` my orders paginated, `GET /api/v1/orders/{id}`, `PUT /api/v1/orders/{id}/cancel`).
   2. Apply JPA `@EntityGraph` or `JOIN FETCH` in `OrderRepository` to solve N+1 query issue when loading order items.
 - **Acceptance Criteria**:
   - Querying customer orders executes exactly 1 SQL query with `JOIN FETCH`.
-  - All order REST endpoints function properly.
+  - All customer order REST endpoints function properly.
 
 ---
 
@@ -89,7 +89,7 @@
 - **Title**: Implement Transactional OrderService.createOrder() with Pessimistic Stock Lock
 - **IDs**: REQ-OFL-B-203
 - **Tasks**:
-  1. Get cart items from Redis (`cart:{userId}`).
+  1. Read cart items from Redis (`cart:{userId}`).
   2. Lock products with `PESSIMISTIC_WRITE` and **sort product IDs before locking to prevent deadlock**.
   3. Validate stock availability, decrease stock, create order + order_items, clear cart, publish `OrderCreatedEvent`.
 - **Acceptance Criteria**:
@@ -114,7 +114,7 @@
 - **IDs**: REQ-OFL-T-201
 - **Tasks**:
   1. Write JUnit 5 & Mockito unit tests for `OrderService.createOrder()` (min 3 tests).
-  2. Test scenarios: success flow, insufficient stock, empty cart.
+  2. Test scenarios: success flow, insufficient stock, empty cart, unauthorized access.
 - **Acceptance Criteria**:
   - All 3+ unit tests pass 100%.
 
@@ -145,11 +145,11 @@
 
 ---
 
-### Story H-12 (Day 12 - Tue, 2026-08-04): E2E Base Integration Test
+### Story H-12 (Day 12 - Tue, 2026-08-04): Base Integration Test & E2E Order Flow Test
 - **Title**: Write BaseIntegrationTest and E2E Order Flow Integration Test
 - **IDs**: REQ-OFL-B-301
 - **Tasks**:
-  1. Extend starter's `BaseIntegrationTest` using Testcontainers.
+  1. Extend starter's `BaseIntegrationTest` using Testcontainers (PostgreSQL, Redis, RabbitMQ).
   2. Test flow: register -> login -> add to cart -> create order -> verify stock decreased.
 - **Acceptance Criteria**:
   - Integration test executes full flow with Testcontainers successfully.
