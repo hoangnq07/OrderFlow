@@ -41,7 +41,7 @@ development_status:
   epic-2: in-progress
   2-1-order-listing-optimization-and-cart-rest-endpoints: done
   2-2-angular-cart-component-ui: done
-  2-3-customer-order-ui-and-rabbitmq-event-infrastructure: backlog
+  2-3-customer-order-ui-and-rabbitmq-event-infrastructure: done
   2-4-order-creation-unit-tests-and-rabbitmq-consumers: backlog
   2-5-postgresql-full-text-search-and-redis-product-detail-cache: backlog
   epic-2-retrospective: optional
