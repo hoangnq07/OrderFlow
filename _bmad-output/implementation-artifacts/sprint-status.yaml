@@ -52,9 +52,9 @@ development_status:
   3-4-concurrency-stock-lock-testing-and-rabbitmq-dlq-retry-setup: done
   3-5-concurrency-lock-verification-and-swagger-testcontainers-completion: done
   epic-3-retrospective: optional
-  epic-4: in-progress
+  epic-4: done
   4-1-full-e2e-flow-validation-and-bug-triage: done
-  4-2-cross-team-code-review: backlog
+  4-2-cross-team-code-review: done
   epic-4-retrospective: optional
   epic-5: backlog
   5-1-stress-testing-with-apache-bench-and-response-time-tuning: backlog
