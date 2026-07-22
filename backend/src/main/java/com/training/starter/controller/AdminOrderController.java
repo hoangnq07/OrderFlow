@@ -1,12 +1,13 @@
 package com.training.starter.controller;
 
-import com.training.starter.dto.request.UpdateOrderStatusRequest;
 import com.training.starter.common.ApiResponse;
 import com.training.starter.common.PageResponse;
+import com.training.starter.dto.request.UpdateOrderStatusRequest;
 import com.training.starter.dto.response.OrderResponse;
 import com.training.starter.enums.OrderStatus;
 import com.training.starter.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,11 @@ public class AdminOrderController {
 
     @GetMapping
     @Operation(summary = "Get paginated orders list for Admin", description = "Retrieve all customer orders with optional status filtering")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Orders retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized access token missing or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
+    })
     public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getAdminOrders(
             @RequestParam(required = false) OrderStatus status,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -43,6 +49,13 @@ public class AdminOrderController {
 
     @PutMapping("/{id}/status")
     @Operation(summary = "Update customer order status by Admin", description = "Update order status following validated state transition rules")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order status updated successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid status transition request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized access token missing or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Order not found")
+    })
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateOrderStatusRequest request) {

@@ -4,6 +4,7 @@ import com.training.starter.common.ApiResponse;
 import com.training.starter.dto.response.DashboardStatsResponse;
 import com.training.starter.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,11 @@ public class AdminDashboardController {
 
     @GetMapping("/stats")
     @Operation(summary = "Get admin dashboard statistics", description = "Retrieve total revenue, orders count, product count, and user metrics")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Dashboard stats retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized access token missing or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
+    })
     public ResponseEntity<ApiResponse<DashboardStatsResponse>> getDashboardStats() {
         DashboardStatsResponse stats = orderService.getDashboardStats();
         return ResponseEntity.ok(ApiResponse.success(stats));
