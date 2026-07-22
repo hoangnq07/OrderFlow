@@ -1,31 +1,334 @@
+/* OrderFlow Global Design Tokens & Glassmorphism Theme (Light 3D Edition) */
+
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+:root {
+  /* Color Palette - Light Glassmorphism Theme */
+  --bg-light: #f8fafc;
+  --bg-light-gradient: linear-gradient(135deg, #f8fafc 0%, #eef2ff 40%, #e0f2fe 100%);
+  
+  --glass-bg-light: rgba(255, 255, 255, 0.72);
+  --glass-bg-light-hover: rgba(255, 255, 255, 0.88);
+  --glass-border-light: rgba(255, 255, 255, 0.8);
+  --glass-border-subtle: rgba(226, 232, 240, 0.7);
+  --glass-border-glow: rgba(99, 102, 241, 0.4);
+  --glass-blur: blur(16px) saturate(180%);
+  
+  --accent-indigo: #6366f1;
+  --accent-violet: #8b5cf6;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  
+  --text-main: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Shadows for Depth */
+  --glass-shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  --glass-shadow-md: 0 12px 32px -8px rgba(99, 102, 241, 0.14), 0 4px 12px rgba(0, 0, 0, 0.03), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  --glass-shadow-lg: 0 24px 48px -12px rgba(79, 70, 229, 0.22), inset 0 1px 3px rgba(255, 255, 255, 1);
+}
+
 html, body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Outfit', 'Inter', Roboto, sans-serif;
+  background: var(--bg-light-gradient);
+  background-attachment: fixed;
+  color: var(--text-main);
+  overflow-x: hidden;
 }
 
-.container {
-  padding: 24px;
+/* Ambient 3D Floating Orbs Background Container */
+.ambient-3d-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
 }
 
-.full-width {
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+}
+
+.ambient-orb-1 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, rgba(139, 92, 246, 0.15) 70%, transparent 100%);
+  top: -100px;
+  left: -100px;
+  animation: floatOrb1 18s ease-in-out infinite alternate;
+}
+
+.ambient-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(59, 130, 246, 0.12) 70%, transparent 100%);
+  bottom: -150px;
+  right: -100px;
+  animation: floatOrb2 22s ease-in-out infinite alternate;
+}
+
+.ambient-orb-3 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(168, 85, 247, 0.1) 70%, transparent 100%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: floatOrb3 20s ease-in-out infinite alternate;
+}
+
+/* Glassmorphism Utility Classes */
+.glass-panel {
+  background: var(--glass-bg-light);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-light);
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow-md);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.glass-panel-hover:hover {
+  background: var(--glass-bg-light-hover);
+  border-color: var(--glass-border-glow);
+  box-shadow: var(--glass-shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* 3D Tilt Card Base */
+.tilt-card-container {
+  perspective: 1000px;
+}
+
+.tilt-card {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+.tilt-card:hover {
+  transform: translateY(-8px) rotateX(3deg) rotateY(-3deg) scale(1.015);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+/* Glowing Elements */
+.text-gradient-indigo {
+  background: linear-gradient(135deg, var(--accent-indigo), var(--accent-violet));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-glowing {
+  background: linear-gradient(135deg, var(--accent-indigo), var(--accent-violet)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-glowing:hover {
+  box-shadow: 0 12px 28px -4px rgba(99, 102, 241, 0.6);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.btn-glowing-purple {
+  background: linear-gradient(135deg, var(--accent-violet), var(--accent-cyan)) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.4);
+  transition: all 0.3s ease !important;
+}
+
+.btn-glowing-purple:hover {
+  box-shadow: 0 12px 28px -4px rgba(6, 182, 212, 0.5);
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Status Badges */
+.badge-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-confirmed {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.badge-processing {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.badge-shipped {
+  background: rgba(6, 182, 212, 0.12);
+  color: #0891b2;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.badge-delivered {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Angular Material Overrides for Light Glass Theme */
+.mat-mdc-card {
+  background-color: var(--glass-bg-light) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--glass-border-light) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--glass-shadow-md) !important;
+}
+
+.mat-mdc-table {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+
+.mat-mdc-header-row {
+  background: rgba(241, 245, 249, 0.8) !important;
+  border-bottom: 1px solid var(--glass-border-subtle) !important;
+}
+
+.mat-mdc-header-cell {
+  color: var(--accent-indigo) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+}
+
+.mat-mdc-row {
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6) !important;
+  transition: background 0.2s ease;
+}
+
+.mat-mdc-row:hover {
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+.mat-mdc-cell {
+  color: var(--text-main) !important;
+}
+
+.mat-mdc-form-field {
   width: 100%;
 }
 
-.spacer {
-  flex: 1 1 auto;
+.mat-mdc-select-value-text, .mat-mdc-input-element {
+  color: var(--text-main) !important;
 }
 
-.error-message {
-  color: #f44336;
-  font-size: 12px;
-  margin-top: 4px;
+/* Mat Paginator Light Glass Override */
+.mat-mdc-paginator,
+.mat-mdc-paginator-container,
+.mat-mdc-paginator-outer-container {
+  background: transparent !important;
+  color: var(--text-main) !important;
 }
 
-.mat-mdc-snack-bar-container.success-snackbar .mdc-snackbar__surface {
-  background-color: #4caf50;
+.mat-mdc-paginator-page-size-label,
+.mat-mdc-paginator-range-label {
+  color: var(--text-secondary) !important;
 }
 
-.mat-mdc-snack-bar-container.error-snackbar .mdc-snackbar__surface {
-  background-color: #f44336;
+.mat-mdc-paginator-navigation-button .mat-mdc-paginator-icon {
+  fill: var(--accent-indigo) !important;
 }
+
+.mat-mdc-select-value,
+.mat-mdc-select-arrow {
+  color: var(--accent-indigo) !important;
+}
+
+.mat-mdc-select-panel {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--glass-border-subtle) !important;
+}
+
+.mat-mdc-option {
+  color: var(--text-main) !important;
+}
+
+.mat-mdc-option:hover, .mat-mdc-option.mdc-list-item--selected {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-indigo);
+}
+
+/* Keyframe Animations */
+@keyframes floatOrb1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(120px, 80px) scale(1.15); }
+  100% { transform: translate(-60px, 140px) scale(0.95); }
+}
+
+@keyframes floatOrb2 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(-140px, -90px) scale(1.2); }
+  100% { transform: translate(80px, -120px) scale(0.9); }
+}
+
+@keyframes floatOrb3 {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-40%, -60%) scale(1.25); }
+  100% { transform: translate(-60%, -40%) scale(0.85); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1.5deg); }
+}
+
+.animated-float {
+  animation: float 6s ease-in-out infinite;
+}
+

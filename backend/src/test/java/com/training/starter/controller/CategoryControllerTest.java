@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.training.starter.dto.request.CreateCategoryRequest;
 import com.training.starter.dto.response.CategoryResponse;
 import com.training.starter.security.JwtAuthenticationFilter;
+import com.training.starter.security.RateLimitingFilter;
 import com.training.starter.service.CategoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ class CategoryControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private RateLimitingFilter rateLimitingFilter;
 
     @Test
     void getAll_validRequest_returnsListOfCategories() throws Exception {

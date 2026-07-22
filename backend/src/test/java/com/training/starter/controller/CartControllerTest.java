@@ -9,6 +9,7 @@ import com.training.starter.entity.User;
 import com.training.starter.enums.Role;
 import com.training.starter.repository.UserRepository;
 import com.training.starter.security.JwtAuthenticationFilter;
+import com.training.starter.security.RateLimitingFilter;
 import com.training.starter.service.CartService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,9 @@ class CartControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private RateLimitingFilter rateLimitingFilter;
 
     private User mockUser;
     private UsernamePasswordAuthenticationToken auth;

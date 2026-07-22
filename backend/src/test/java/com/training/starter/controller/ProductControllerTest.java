@@ -6,6 +6,7 @@ import com.training.starter.dto.request.UpdateProductRequest;
 import com.training.starter.dto.response.ProductResponse;
 import com.training.starter.exception.ResourceNotFoundException;
 import com.training.starter.security.JwtAuthenticationFilter;
+import com.training.starter.security.RateLimitingFilter;
 import com.training.starter.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,9 @@ class ProductControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private RateLimitingFilter rateLimitingFilter;
 
     @Test
     void getAll_validRequest_returnsPageOfProducts() throws Exception {

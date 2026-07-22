@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/cart/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/v1/orders/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
-                .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class)
+                .addFilterBefore(rateLimitingFilter, org.springframework.security.web.authentication.logout.LogoutFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
