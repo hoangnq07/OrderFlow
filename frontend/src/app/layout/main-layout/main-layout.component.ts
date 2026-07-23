@@ -58,6 +58,10 @@ import { Observable } from 'rxjs';
               <mat-icon [matBadge]="cartCount$ | async" [matBadgeHidden]="(cartCount$ | async) === 0" matBadgeColor="accent">shopping_cart</mat-icon>
               <span>Cart</span>
             </a>
+            <a routerLink="/orders" routerLinkActive="active-link" class="nav-item">
+              <mat-icon>receipt_long</mat-icon>
+              <span>My Orders</span>
+            </a>
             <a *ngIf="authService.getRole() === 'ADMIN'" routerLink="/admin/orders" routerLinkActive="active-link" class="nav-item admin-badge-link">
               <mat-icon>admin_panel_settings</mat-icon>
               <span>Admin Portal</span>
@@ -93,6 +97,10 @@ import { Observable } from 'rxjs';
               <button mat-menu-item routerLink="/cart">
                 <mat-icon>shopping_cart</mat-icon>
                 <span>My Cart</span>
+              </button>
+              <button mat-menu-item routerLink="/orders">
+                <mat-icon>receipt_long</mat-icon>
+                <span>My Orders</span>
               </button>
               <button *ngIf="authService.getRole() === 'ADMIN'" mat-menu-item routerLink="/admin/orders">
                 <mat-icon>dashboard_customize</mat-icon>
