@@ -24,6 +24,15 @@ export class ProductService {
     return this.http.get<ApiResponse<PageResponse<ProductResponse>>>(this.apiUrl, { params });
   }
 
+  searchProducts(query: string, page = 0, size = 10): Observable<ApiResponse<PageResponse<ProductResponse>>> {
+    const params = new HttpParams()
+      .set('q', query)
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<ApiResponse<PageResponse<ProductResponse>>>(`${this.apiUrl}/search`, { params });
+  }
+
   getProductById(id: number): Observable<ApiResponse<ProductResponse>> {
     return this.http.get<ApiResponse<ProductResponse>>(`${this.apiUrl}/${id}`);
   }

@@ -9,9 +9,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { CartService } from '../../core/services/cart.service';
+import { OrderService } from '../../core/services/order.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Cart, CartItem } from '../../core/models/cart.model';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { CheckoutDialogComponent } from './checkout-dialog/checkout-dialog.component';
 
 @Component({
   selector: 'app-cart',
@@ -367,6 +369,7 @@ export class CartComponent implements OnInit {
 
   constructor(
     private cartService: CartService,
+    private orderService: OrderService,
     private notification: NotificationService,
     private dialog: MatDialog,
     private router: Router
@@ -451,7 +454,30 @@ export class CartComponent implements OnInit {
   }
 
   onCheckout(): void {
-    this.notification.info('Checkout functionality will be enabled in Epic 2 Order flow!');
+    if (!this.cart || this.cart.items.length === 0) return;
+
+    const dialogRef = this.dialog.open(CheckoutDialogComponent, {
+      width: '500px',
+      data: { cart: this.cart }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.actionLoading = true;
+        this.orderService.createOrder(result).subscribe({
+          next: (res) => {
+            this.actionLoading = false;
+            this.notification.success(`Order #${res.data?.id || ''} placed successfully! Confirmation email has been dispatched.`);
+            this.loadCart();
+            this.router.navigate(['/orders']);
+          },
+          error: (err) => {
+            this.actionLoading = false;
+            this.notification.error(err.error?.message || 'Failed to place order. Please try again.');
+          }
+        });
+      }
+    });
   }
 
   onImageError(event: Event): void {
