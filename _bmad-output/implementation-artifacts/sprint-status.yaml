@@ -56,8 +56,8 @@ development_status:
   4-1-full-e2e-flow-validation-and-bug-triage: done
   4-2-cross-team-code-review: done
   epic-4-retrospective: optional
-  epic-5: in-progress
+  epic-5: done
   5-1-stress-testing-with-apache-bench-and-response-time-tuning: done
-  5-2-final-code-cleanup-and-test-coverage-verification: backlog
-  5-3-system-architecture-documentation-and-live-demo-presentation: backlog
+  5-2-final-code-cleanup-and-test-coverage-verification: done
+  5-3-system-architecture-documentation-and-live-demo-presentation: done
   epic-5-retrospective: optional
