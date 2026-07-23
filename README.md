@@ -1,6 +1,6 @@
-# Training Starter
+# OrderFlow (E-commerce Order Processing System)
 
-Full-stack starter codebase for fresher training program. Includes JWT authentication, configuration, exception handling, and a sample User CRUD as a reference pattern.
+OrderFlow is a full-stack e-commerce order-processing system built with Java 17, Spring Boot 3.2, Redis, RabbitMQ, PostgreSQL, and Angular 17.
 
 ## Tech Stack
 
@@ -9,6 +9,26 @@ Full-stack starter codebase for fresher training program. Includes JWT authentic
 **Frontend**: Angular 17, Angular Material, RxJS, TypeScript
 
 **Infrastructure**: Docker Compose (PostgreSQL, Redis, RabbitMQ, MailHog)
+
+## Core Features & Architecture
+
+```text
+Register / Login (JWT)
+  ↓
+Browse Product Catalog & Search (PostgreSQL FTS + Redis Cache)
+  ↓
+Add Products to Cart (Redis Hash cart:{userId}, TTL 7 Days)
+  ↓
+Create Order (DB Transaction + Pessimistic Stock Locking PESSIMISTIC_WRITE)
+  ↓
+Clear Cart & Publish OrderCreatedEvent (RabbitMQ)
+  ↓
+Process Payment (PaymentConsumer) -> PaymentCompletedEvent
+  ↓
+Send Confirmation Email (NotificationConsumer via MailHog)
+  ↓
+Track Order Status & Admin Order Management
+```
 
 ## Quick Start
 
@@ -24,7 +44,7 @@ Full-stack starter codebase for fresher training program. Includes JWT authentic
 ```bash
 cd backend
 docker compose up -d
-docker compose ps   # Verify 4 services running
+docker compose ps   # Verify 4 services running (PostgreSQL, Redis, RabbitMQ, MailHog)
 ```
 
 ### 2. Run Backend
@@ -45,13 +65,17 @@ npm install
 npm start
 ```
 
-- Angular: http://localhost:4200
+- Angular Web App: http://localhost:4200
 
-### 4. Run Tests
+### 4. Run Tests & Performance Benchmark
 
 ```bash
+# Run Backend Tests
 cd backend
 ./mvnw test
+
+# Run Apache Bench Stress Test (Windows PowerShell)
+.\scripts\run-stress-test.ps1 -BaseUrl "http://localhost:8080" -Requests 1000 -Concurrency 50
 ```
 
 ## Service URLs
@@ -66,80 +90,39 @@ cd backend
 | RabbitMQ Management | http://localhost:15672 | guest / guest |
 | MailHog Web UI | http://localhost:8025 | no auth |
 
-## What's Included
-
-### Backend
-- JWT authentication (login, register, refresh token)
-- Security configuration (stateless, BCrypt, role-based)
-- Global exception handler (400, 401, 403, 404, 409, 500)
-- Redis configuration with Jackson serializer
-- RabbitMQ configuration with base exchange/queue
-- OpenAPI/Swagger with JWT bearer scheme
-- CORS configuration for Angular dev server
-- ApiResponse and PageResponse wrappers
-- BaseEntity with auto-managed timestamps
-- User entity with full CRUD (reference implementation)
-- Flyway migration for users table
-- Unit tests for UserService (7 tests)
-- BaseIntegrationTest with Testcontainers
-
-### Frontend
-- Angular 17 standalone components
-- JWT interceptor (auto-attach token)
-- Auth guard (route protection)
-- Auth service (login, register, logout)
-- Notification service (snackbar)
-- Main layout with sidebar navigation
-- Auth layout for login/register
-- Login and register pages
-- User list page with pagination
-- User form page (create/edit)
-- Confirm dialog component
-- Loading spinner component
-- Pagination component
-
-## How to Extend
-
-Follow the User CRUD pattern to add domain entities:
-
-1. **Entity** extending `BaseEntity`
-2. **Flyway migration** (V2, V3, ...)
-3. **Repository** extending `JpaRepository`
-4. **DTOs** (request + response records)
-5. **Mapper** (MapStruct)
-6. **Service** (interface + impl)
-7. **Controller** (REST endpoints)
-8. **Unit tests**
-9. **Angular components** (list + form + service)
-
 ## Project Structure
 
-```
-training-starter/
+```text
+OrderFlow/
 ├── backend/
 │   ├── pom.xml
 │   ├── docker-compose.yml
 │   └── src/
 │       ├── main/java/com/training/starter/
-│       │   ├── config/          # Redis, RabbitMQ, OpenAPI, CORS
-│       │   ├── security/        # JWT auth flow
-│       │   ├── controller/      # Auth + User CRUD
+│       │   ├── config/          # Redis, RabbitMQ, OpenAPI, RateLimiting
+│       │   ├── security/        # JWT auth flow & RateLimitingFilter
+│       │   ├── controller/      # Auth, User, Product, Category, Cart, Order, Admin
 │       │   ├── dto/             # Request/Response DTOs
-│       │   ├── entity/          # BaseEntity + User
-│       │   ├── exception/       # Global handler + custom exceptions
+│       │   ├── entity/          # BaseEntity, User, Category, Product, Order, OrderItem
+│       │   ├── exception/       # Global exception handler
+│       │   ├── consumer/        # RabbitMQ Payment & Notification Consumers
+│       │   ├── publisher/       # OrderEventPublisher
 │       │   ├── mapper/          # MapStruct
 │       │   ├── repository/      # Spring Data JPA
-│       │   ├── service/         # Business logic
-│       │   └── common/          # ApiResponse + PageResponse
-│       ├── main/resources/
-│       │   ├── application.yml
-│       │   └── db/migration/
-│       └── test/
+│       │   └── service/         # Business logic with Pessimistic Locking
+│       └── test/                # Unit & Testcontainers E2E tests
 ├── frontend/
 │   └── src/app/
 │       ├── core/                # Interceptors, guards, services, models
-│       ├── layout/              # Main + Auth layouts
-│       ├── features/            # Auth, Users, Dashboard
+│       ├── layout/              # Main + Auth + Admin layouts
+│       ├── features/            # Auth, Products, Cart, Orders, Admin, Dashboard
 │       └── shared/              # Reusable components
+├── docs/                        # Detailed System Architecture & Guide Documents
+│   ├── architecture.md          # Architecture & C4/Mermaid specifications
+│   ├── api-documentation.md     # REST API endpoint reference
+│   ├── deployment-and-setup.md  # Docker & Local environment setup guide
+│   └── presentation-demo-guide.md # 15-20 min live demo presentation guide
+├── scripts/                     # Apache Bench performance test scripts
+├── benchmark-report.md          # Stress test latency & throughput report
 └── README.md
 ```
