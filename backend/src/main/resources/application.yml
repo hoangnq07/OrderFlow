@@ -56,6 +56,11 @@ jwt:
 
 server:
   port: 8080
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    connection-timeout: 20000ms
 
 springdoc:
   api-docs:
