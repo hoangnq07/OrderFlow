@@ -15,7 +15,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
       <header class="page-header">
         <div>
           <span class="eyebrow">Operations Command Center</span>
-          <h1 class="page-title text-gradient-cyan">
+          <h1 class="page-title">
             <mat-icon class="title-icon">space_dashboard</mat-icon> Executive Dashboard
           </h1>
           <p class="page-subtitle">Monitor real-time sales metrics, revenue analytics, inventory health and active users</p>
@@ -26,14 +26,14 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <mat-icon>schedule</mat-icon>
             Updated {{ lastUpdated | date:'HH:mm:ss' }}
           </span>
-          <button class="refresh-button btn-glowing" type="button" (click)="loadStats()" [disabled]="loading">
+          <button class="refresh-button btn-solid-primary" type="button" (click)="loadStats()" [disabled]="loading">
             <mat-icon [class.spinning]="loading">refresh</mat-icon>
             {{ loading ? 'Refreshing' : 'Refresh data' }}
           </button>
         </div>
       </header>
 
-      <div *ngIf="errorMessage" class="error-banner glass-panel" role="alert">
+      <div *ngIf="errorMessage" class="error-banner surface-card" role="alert">
         <mat-icon>error_outline</mat-icon>
         <div>
           <strong>Dashboard data is unavailable</strong>
@@ -43,22 +43,22 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
       </div>
 
       <div *ngIf="loading && !stats" class="loading-grid" aria-label="Loading dashboard">
-        <div class="skeleton glass-panel" *ngFor="let item of skeletonItems"></div>
+        <div class="skeleton surface-card" *ngFor="let item of skeletonItems"></div>
       </div>
 
       <ng-container *ngIf="stats as data">
         <div class="kpi-grid">
-          <article class="kpi-card revenue-card glass-panel glass-panel-hover">
+          <article class="kpi-card surface-card surface-card-hover">
             <div class="kpi-top">
               <span class="icon revenue"><mat-icon>payments</mat-icon></span>
               <span class="context">Confirmed revenue</span>
             </div>
             <span class="label">Total Gross Revenue</span>
-            <strong class="kpi-amount text-gradient-cyan">{{ data.totalRevenue | currency:'USD':'symbol':'1.2-2' }}</strong>
+            <strong class="kpi-amount revenue-text">{{ data.totalRevenue | currency:'USD':'symbol':'1.2-2' }}</strong>
             <small>Recognized across {{ data.totalOrders | number }} orders</small>
           </article>
 
-          <article class="kpi-card glass-panel glass-panel-hover">
+          <article class="kpi-card surface-card surface-card-hover">
             <div class="kpi-top">
               <span class="icon orders"><mat-icon>receipt_long</mat-icon></span>
               <span class="context">{{ pendingRate | number:'1.0-1' }}% pending</span>
@@ -68,7 +68,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>{{ data.pendingOrders | number }} orders require fulfillment</small>
           </article>
 
-          <article class="kpi-card glass-panel glass-panel-hover">
+          <article class="kpi-card surface-card surface-card-hover">
             <div class="kpi-top">
               <span class="icon average"><mat-icon>analytics</mat-icon></span>
               <span class="context">Average per transaction</span>
@@ -78,7 +78,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>Calculated from customer checkout data</small>
           </article>
 
-          <article class="kpi-card glass-panel glass-panel-hover">
+          <article class="kpi-card surface-card surface-card-hover">
             <div class="kpi-top">
               <span class="icon delivery"><mat-icon>task_alt</mat-icon></span>
               <span class="context">{{ fulfillmentRate | number:'1.0-1' }}% fulfillment</span>
@@ -88,7 +88,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>Completed full delivery lifecycle</small>
           </article>
 
-          <article class="kpi-card glass-panel glass-panel-hover">
+          <article class="kpi-card surface-card surface-card-hover">
             <div class="kpi-top">
               <span class="icon products"><mat-icon>inventory_2</mat-icon></span>
               <span class="context">Catalog items</span>
@@ -98,7 +98,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>Active products listed on storefront</small>
           </article>
 
-          <article class="kpi-card glass-panel glass-panel-hover">
+          <article class="kpi-card surface-card surface-card-hover">
             <div class="kpi-top">
               <span class="icon customers"><mat-icon>group</mat-icon></span>
               <span class="context">Registered accounts</span>
@@ -110,7 +110,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
         </div>
 
         <div class="content-grid">
-          <section class="panel glass-panel workload-panel">
+          <section class="panel surface-card workload-panel">
             <div class="panel-heading">
               <div>
                 <span class="panel-label">Order Fulfillment</span>
@@ -155,7 +155,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             </div>
           </section>
 
-          <aside class="panel glass-panel quick-actions">
+          <aside class="panel surface-card quick-actions">
             <div class="panel-heading">
               <div>
                 <span class="panel-label">Quick Actions</span>
@@ -209,17 +209,18 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
 
     .page-header {
       display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
-      padding: 4px 0 16px; border-bottom: 1px solid var(--glass-border-subtle);
+      padding: 4px 0 16px; border-bottom: 1px solid var(--border-subtle);
     }
     .eyebrow, .panel-label {
-      color: #38bdf8; font-size: .7rem; font-weight: 800;
+      color: #0284c7; font-size: .7rem; font-weight: 800;
       letter-spacing: .13em; text-transform: uppercase;
     }
     .page-title {
       display: flex; align-items: center; gap: 10px;
       margin: 4px 0 0 0; font-size: 2rem; font-weight: 800; letter-spacing: -.03em;
+      color: var(--text-main);
     }
-    .title-icon { font-size: 32px; width: 32px; height: 32px; color: #38bdf8; }
+    .title-icon { font-size: 32px; width: 32px; height: 32px; color: #4f46e5; }
     .page-subtitle { margin: 4px 0 0 0; color: var(--text-muted); font-size: .9rem; }
     .header-actions { display: flex; align-items: center; gap: 14px; }
     .updated-at { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: .75rem; }
@@ -239,33 +240,34 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
     .kpi-card {
       display: flex; flex-direction: column; justify-content: space-between;
       min-height: 150px; padding: 22px; box-sizing: border-box;
+      background: #ffffff;
     }
-    .revenue-card { background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(236, 253, 245, 0.7)); }
     .kpi-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .icon {
-      display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px;
+      display: grid; width: 40px; height: 40px; place-items: center; border-radius: 10px;
     }
     .icon mat-icon { width: 22px; height: 22px; font-size: 22px; }
-    .revenue { color: #10b981; background: rgba(16, 185, 129, .14); }
-    .orders { color: #6366f1; background: rgba(99, 102, 241, .14); }
-    .average { color: #8b5cf6; background: rgba(139, 92, 246, .14); }
-    .delivery { color: #06b6d4; background: rgba(6, 182, 212, .14); }
-    .products { color: #f59e0b; background: rgba(245, 158, 11, .14); }
-    .customers { color: #ec4899; background: rgba(236, 72, 153, .14); }
+    .revenue { color: #10b981; background: #ecfdf5; }
+    .orders { color: #4f46e5; background: #eef2ff; }
+    .average { color: #8b5cf6; background: #f3e8ff; }
+    .delivery { color: #0284c7; background: #e0f2fe; }
+    .products { color: #f59e0b; background: #fffbeb; }
+    .customers { color: #ec4899; background: #fce7f3; }
     
     .context { color: var(--text-muted); font-size: .7rem; font-weight: 600; }
     .label { color: var(--text-secondary); font-size: .8rem; font-weight: 650; }
     .kpi-amount { margin: 4px 0; color: var(--text-main); font-size: 1.7rem; font-weight: 800; letter-spacing: -.03em; }
+    .revenue-text { color: #10b981 !important; }
     .kpi-card > small { color: var(--text-muted); font-size: .72rem; }
 
     .content-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.8fr); gap: 18px; }
     .panel {
-      padding: 24px; box-sizing: border-box;
+      padding: 24px; box-sizing: border-box; background: #ffffff;
     }
     .panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
     .panel h2 { margin: 4px 0 0; color: var(--text-main); font-size: 1.1rem; font-weight: 800; }
     .view-all-link {
-      display: flex; align-items: center; gap: 5px; color: #38bdf8;
+      display: flex; align-items: center; gap: 5px; color: #0284c7;
       font-size: .78rem; font-weight: 700; text-decoration: none;
     }
     .view-all-link mat-icon { width: 16px; height: 16px; font-size: 16px; }
@@ -277,7 +279,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
     .workload-copy { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
     .workload-copy span { color: var(--text-secondary); font-size: .78rem; font-weight: 600; }
     .workload-copy strong { color: var(--text-main); font-size: .95rem; font-weight: 800; }
-    .progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: rgba(226, 232, 240, 0.8); }
+    .progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
     .progress-track span { display: block; height: 100%; border-radius: inherit; transition: width .3s ease; }
     .pending-progress { background: #f59e0b; }
     .delivered-progress { background: #10b981; }
@@ -285,32 +287,32 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
     
     .attention {
       display: flex; align-items: center; gap: 14px; margin-top: 24px; padding: 16px;
-      border: 1px solid rgba(245, 158, 11, .3); border-radius: 12px; background: rgba(245, 158, 11, .08);
+      border: 1px solid rgba(245, 158, 11, .3); border-radius: 10px; background: #fffbeb;
     }
     .attention mat-icon { color: #f59e0b; font-size: 24px; width: 24px; height: 24px; }
     .attention strong, .attention span { display: block; }
     .attention strong { color: #b45309; font-size: .82rem; }
     .attention span { margin-top: 3px; color: var(--text-secondary); font-size: .74rem; }
-    .attention.clear { border-color: rgba(16, 185, 129, .3); background: rgba(16, 185, 129, .08); }
+    .attention.clear { border-color: rgba(16, 185, 129, .3); background: #ecfdf5; }
     .attention.clear mat-icon, .attention.clear strong { color: #047857; }
 
     .quick-actions { display: flex; flex-direction: column; }
     .shortcut-item {
       display: grid; grid-template-columns: 40px 1fr 20px; align-items: center; gap: 14px;
-      padding: 14px 12px; border-radius: 12px; color: inherit; text-decoration: none;
-      transition: background 0.2s ease;
+      padding: 12px 10px; border-radius: 10px; color: inherit; text-decoration: none;
+      transition: background-color 0.15s ease;
     }
-    .shortcut-item:hover { background: rgba(99, 102, 241, 0.08); }
+    .shortcut-item:hover { background: #f1f5f9; }
     .shortcut-item:hover strong { color: #4f46e5; }
     
     .action-icon {
       display: grid; width: 40px; height: 40px; place-items: center; border-radius: 10px;
     }
     .action-icon mat-icon { width: 20px; height: 20px; font-size: 20px; }
-    .order-icon { color: #6366f1; background: rgba(99, 102, 241, .12); }
-    .product-icon { color: #06b6d4; background: rgba(6, 182, 212, .12); }
-    .add-icon { color: #10b981; background: rgba(16, 185, 129, .12); }
-    .user-icon { color: #8b5cf6; background: rgba(139, 92, 246, .12); }
+    .order-icon { color: #4f46e5; background: #eef2ff; }
+    .product-icon { color: #0284c7; background: #e0f2fe; }
+    .add-icon { color: #10b981; background: #ecfdf5; }
+    .user-icon { color: #8b5cf6; background: #f3e8ff; }
 
     .shortcut-text strong, .shortcut-text small { display: block; }
     .shortcut-text strong { color: var(--text-main); font-size: .82rem; font-weight: 700; transition: color .15s; }
@@ -319,7 +321,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
 
     .error-banner {
       display: flex; align-items: center; gap: 12px; padding: 16px 20px; border: 1px solid rgba(248, 113, 113, .3);
-      color: #dc2626; background: rgba(254, 242, 242, 0.9);
+      color: #dc2626; background: #fef2f2;
     }
     .error-banner div { flex: 1; }
     .error-banner strong, .error-banner span { display: block; }
@@ -328,12 +330,9 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
     .error-banner button { border: 0; color: #dc2626; background: transparent; font-weight: 700; cursor: pointer; }
     
     .skeleton {
-      height: 150px; border-radius: 16px;
-      background: linear-gradient(90deg, rgba(241, 245, 249, 0.6) 25%, rgba(226, 232, 240, 0.8) 50%, rgba(241, 245, 249, 0.6) 75%);
-      background-size: 200% 100%; animation: shimmer 1.4s infinite;
+      height: 150px; border-radius: 16px; background: #e2e8f0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes shimmer { to { background-position: -200% 0; } }
 
     @media (max-width: 1050px) {
       .kpi-grid, .loading-grid { grid-template-columns: repeat(2, 1fr); }

@@ -29,7 +29,7 @@ import { NotificationService } from '../../../core/services/notification.service
       <div class="product-header">
         <div>
           <span class="eyebrow">Storefront Collection</span>
-          <h1 class="page-title text-gradient-cyan">Featured Storefront Catalog</h1>
+          <h1 class="page-title">Featured Storefront Catalog</h1>
           <p class="page-subtitle">Discover premium items crafted for seamless order processing</p>
         </div>
       </div>
@@ -40,12 +40,12 @@ import { NotificationService } from '../../../core/services/notification.service
         </div>
       }
 
-      <!-- USER VIEW: 3D Floating Product Grid -->
+      <!-- USER VIEW: Solid Clean Product Grid -->
       @if (!loading) {
         <div class="storefront-grid">
           @for (product of products; track product.id) {
             <div class="tilt-card-container">
-              <div class="tilt-card glass-panel glass-panel-hover product-card">
+              <div class="tilt-card surface-card surface-card-hover product-card">
                 <div class="product-image-box">
                   <img [src]="product.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'"
                        (error)="onImageError($event)" [alt]="product.name" class="product-img" />
@@ -57,7 +57,7 @@ import { NotificationService } from '../../../core/services/notification.service
                   <p class="product-slug-text">{{ product.slug }}</p>
 
                   <div class="price-stock-row">
-                    <div class="price-tag text-gradient-cyan">
+                    <div class="price-tag">
                       {{ product.price | currency:'USD':'symbol':'1.2-2' }}
                     </div>
 
@@ -69,7 +69,7 @@ import { NotificationService } from '../../../core/services/notification.service
 
                   <button 
                     mat-raised-button 
-                    class="btn-glowing-purple add-cart-btn" 
+                    class="btn-solid-primary add-cart-btn" 
                     (click)="onAddToCart(product)" 
                     [disabled]="!product.active || product.stock <= 0">
                     <mat-icon>shopping_bag</mat-icon> Add to Cart
@@ -78,7 +78,7 @@ import { NotificationService } from '../../../core/services/notification.service
               </div>
             </div>
           } @empty {
-            <div class="empty-state glass-panel">
+            <div class="empty-state surface-card">
               <mat-icon class="empty-icon">inventory</mat-icon>
               <h3>No products found in storefront</h3>
             </div>
@@ -86,7 +86,7 @@ import { NotificationService } from '../../../core/services/notification.service
         </div>
       }
 
-      <div class="pagination-wrapper glass-panel">
+      <div class="pagination-wrapper surface-card">
         <mat-paginator
           [length]="totalElements"
           [pageSize]="pageSize"
@@ -114,7 +114,7 @@ import { NotificationService } from '../../../core/services/notification.service
     }
 
     .eyebrow {
-      color: #38bdf8;
+      color: #0284c7;
       font-size: .7rem;
       font-weight: 800;
       letter-spacing: .13em;
@@ -126,6 +126,7 @@ import { NotificationService } from '../../../core/services/notification.service
       font-size: 2rem;
       font-weight: 800;
       letter-spacing: -0.5px;
+      color: var(--text-main);
     }
 
     .page-subtitle {
@@ -134,7 +135,7 @@ import { NotificationService } from '../../../core/services/notification.service
       font-size: 0.95rem;
     }
 
-    /* Storefront Grid & 3D Cards */
+    /* Storefront Grid & Solid Cards */
     .storefront-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -156,32 +157,31 @@ import { NotificationService } from '../../../core/services/notification.service
       height: 200px;
       border-radius: 12px;
       overflow: hidden;
-      background: rgba(0, 0, 0, 0.05);
+      background: #f1f5f9;
     }
 
     .product-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease;
+      transition: transform 0.3s ease;
     }
 
     .product-card:hover .product-img {
-      transform: scale(1.08);
+      transform: scale(1.05);
     }
 
     .category-pill-badge {
       position: absolute;
       top: 12px;
       right: 12px;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(8px);
-      color: var(--accent-cyan);
+      background: #0284c7;
+      color: #ffffff;
       padding: 4px 10px;
-      border-radius: 12px;
+      border-radius: 8px;
       font-size: 0.75rem;
       font-weight: 700;
-      border: 1px solid rgba(0, 242, 254, 0.3);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
     }
 
     .product-info {
@@ -215,6 +215,7 @@ import { NotificationService } from '../../../core/services/notification.service
     .price-tag {
       font-size: 1.35rem;
       font-weight: 800;
+      color: #4f46e5;
     }
 
     .stock-indicator {
@@ -231,12 +232,13 @@ import { NotificationService } from '../../../core/services/notification.service
       height: 16px;
     }
 
-    .in-stock { color: var(--accent-emerald); }
-    .out-of-stock { color: #f87171; }
+    .in-stock { color: #10b981; }
+    .out-of-stock { color: #ef4444; }
 
     .add-cart-btn {
       width: 100%;
       margin-top: 12px;
+      height: 42px;
     }
 
     .pagination-wrapper {
@@ -260,7 +262,7 @@ import { NotificationService } from '../../../core/services/notification.service
       font-size: 48px;
       width: 48px;
       height: 48px;
-      color: var(--accent-cyan);
+      color: #0284c7;
     }
   `]
 })
