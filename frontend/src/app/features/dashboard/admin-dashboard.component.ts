@@ -58,7 +58,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>Recognized across {{ data.totalOrders | number }} orders</small>
           </article>
 
-          <article class="kpi-card surface-card surface-card-hover">
+          <article class="kpi-card surface-card surface-card-hover clickable-card" [routerLink]="['/admin/orders']">
             <div class="kpi-top">
               <span class="icon orders"><mat-icon>receipt_long</mat-icon></span>
               <span class="context">{{ pendingRate | number:'1.0-1' }}% pending</span>
@@ -78,7 +78,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>Calculated from customer checkout data</small>
           </article>
 
-          <article class="kpi-card surface-card surface-card-hover">
+          <article class="kpi-card surface-card surface-card-hover clickable-card" [routerLink]="['/admin/orders']" [queryParams]="{ status: 'DELIVERED' }">
             <div class="kpi-top">
               <span class="icon delivery"><mat-icon>task_alt</mat-icon></span>
               <span class="context">{{ fulfillmentRate | number:'1.0-1' }}% fulfillment</span>
@@ -88,7 +88,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>Completed full delivery lifecycle</small>
           </article>
 
-          <article class="kpi-card surface-card surface-card-hover">
+          <article class="kpi-card surface-card surface-card-hover clickable-card" routerLink="/admin/products">
             <div class="kpi-top">
               <span class="icon products"><mat-icon>inventory_2</mat-icon></span>
               <span class="context">Catalog items</span>
@@ -98,7 +98,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
             <small>Active products listed on storefront</small>
           </article>
 
-          <article class="kpi-card surface-card surface-card-hover">
+          <article class="kpi-card surface-card surface-card-hover clickable-card" routerLink="/admin/users">
             <div class="kpi-top">
               <span class="icon customers"><mat-icon>group</mat-icon></span>
               <span class="context">Registered accounts</span>
@@ -121,7 +121,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
               </a>
             </div>
 
-            <div class="workload-row">
+            <div class="workload-row clickable-row" [routerLink]="['/admin/orders']" [queryParams]="{ status: 'PENDING' }">
               <div class="workload-copy">
                 <span>Pending Queue</span>
                 <strong>{{ data.pendingOrders | number }}</strong>
@@ -132,7 +132,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
               <span class="percentage">{{ pendingRate | number:'1.0-1' }}%</span>
             </div>
 
-            <div class="workload-row">
+            <div class="workload-row clickable-row" [routerLink]="['/admin/orders']" [queryParams]="{ status: 'DELIVERED' }">
               <div class="workload-copy">
                 <span>Delivered</span>
                 <strong>{{ data.completedOrders | number }}</strong>
@@ -143,12 +143,12 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
               <span class="percentage">{{ fulfillmentRate | number:'1.0-1' }}%</span>
             </div>
 
-            <div class="attention" [class.clear]="data.pendingOrders === 0">
+            <div class="attention clickable-attention" [class.clear]="data.pendingOrders === 0" [routerLink]="['/admin/orders']" [queryParams]="{ status: 'PENDING' }">
               <mat-icon>{{ data.pendingOrders > 0 ? 'notification_important' : 'check_circle' }}</mat-icon>
               <div>
                 <strong>{{ data.pendingOrders > 0 ? 'Action Needed: Pending Orders' : 'Fulfillment Status Operational' }}</strong>
                 <span *ngIf="data.pendingOrders > 0">
-                  {{ data.pendingOrders }} order{{ data.pendingOrders === 1 ? '' : 's' }} awaiting admin status update.
+                  {{ data.pendingOrders }} order{{ data.pendingOrders === 1 ? '' : 's' }} awaiting admin status update. Click to view pending queue.
                 </span>
                 <span *ngIf="data.pendingOrders === 0">No orders currently pending review.</span>
               </div>
@@ -163,10 +163,10 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
               </div>
             </div>
             
-            <a routerLink="/admin/orders" class="shortcut-item">
+            <a routerLink="/admin/orders" [queryParams]="{ status: 'PENDING' }" class="shortcut-item">
               <span class="action-icon order-icon"><mat-icon>receipt_long</mat-icon></span>
               <div class="shortcut-text">
-                <strong>Process Orders</strong>
+                <strong>Process Pending Orders</strong>
                 <small>Review & update order transitions</small>
               </div>
               <mat-icon class="arrow-icon">chevron_right</mat-icon>
@@ -242,6 +242,9 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
       min-height: 150px; padding: 22px; box-sizing: border-box;
       background: #ffffff;
     }
+    .clickable-card { cursor: pointer; }
+    .clickable-card:hover { border-color: var(--primary) !important; }
+
     .kpi-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .icon {
       display: grid; width: 40px; height: 40px; place-items: center; border-radius: 10px;
@@ -276,6 +279,8 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
       display: grid; grid-template-columns: 140px minmax(120px, 1fr) 52px;
       align-items: center; gap: 16px; margin: 18px 0;
     }
+    .clickable-row { cursor: pointer; padding: 6px 8px; border-radius: 8px; transition: background-color 0.15s ease; }
+    .clickable-row:hover { background-color: #f1f5f9; }
     .workload-copy { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
     .workload-copy span { color: var(--text-secondary); font-size: .78rem; font-weight: 600; }
     .workload-copy strong { color: var(--text-main); font-size: .95rem; font-weight: 800; }
@@ -289,6 +294,8 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
       display: flex; align-items: center; gap: 14px; margin-top: 24px; padding: 16px;
       border: 1px solid rgba(245, 158, 11, .3); border-radius: 10px; background: #fffbeb;
     }
+    .clickable-attention { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .clickable-attention:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
     .attention mat-icon { color: #f59e0b; font-size: 24px; width: 24px; height: 24px; }
     .attention strong, .attention span { display: block; }
     .attention strong { color: #b45309; font-size: .82rem; }

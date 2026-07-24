@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -12,6 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { AdminOrderService } from '../../../../core/services/admin-order.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -34,13 +36,14 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
     MatInputModule,
     MatFormFieldModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatMenuModule
   ],
   template: `
     <div class="admin-orders-container">
       <div class="admin-page-header">
         <div>
-          <h1 class="page-title text-gradient-cyan">
+          <h1 class="page-title">
             <mat-icon class="title-icon">receipt_long</mat-icon> Admin Order Processing
           </h1>
           <p class="page-subtitle">Real-time order state transition control, tracking and fulfillment</p>
@@ -51,13 +54,13 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
         </button>
       </div>
 
-      <div class="admin-card glass-panel">
+      <div class="admin-card surface-card">
         <!-- Filter Controls Bar -->
         <div class="filter-bar">
           <mat-form-field appearance="outline" class="status-filter">
             <mat-label>Filter by Order Status</mat-label>
             <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onStatusFilterChange()">
-              <mat-option value="ALL">All Statuses</mat-option>
+              <mat-option value="ALL">All Statuses (Show All)</mat-option>
               <mat-option value="PENDING">PENDING</mat-option>
               <mat-option value="CONFIRMED">CONFIRMED</mat-option>
               <mat-option value="PROCESSING">PROCESSING</mat-option>
@@ -87,8 +90,11 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
               <th mat-header-cell *matHeaderCellDef> Customer </th>
               <td mat-cell *matCellDef="let order">
                 <div class="customer-cell">
-                  <mat-icon class="cust-icon">alternate_email</mat-icon>
-                  <span>{{ order.userEmail }}</span>
+                  <span class="user-avatar-badge">{{ (order.username || order.userEmail || 'U')[0].toUpperCase() }}</span>
+                  <div class="user-info-stack">
+                    <strong class="user-name-title">{{ order.username || ('User #' + order.userId) }}</strong>
+                    <small class="user-email-subtitle">{{ order.userEmail }}</small>
+                  </div>
                 </div>
               </td>
             </ng-container>
@@ -102,14 +108,14 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
             <!-- Total Amount Column -->
             <ng-container matColumnDef="totalAmount">
               <th mat-header-cell *matHeaderCellDef> Total Amount </th>
-              <td mat-cell *matCellDef="let order" class="amount-cell text-gradient-cyan">
+              <td mat-cell *matCellDef="let order" class="amount-cell">
                 \${{ order.totalAmount | number:'1.2-2' }}
               </td>
             </ng-container>
 
             <!-- Status Column -->
             <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef> Status </th>
+              <th mat-header-cell *matHeaderCellDef> Current Status </th>
               <td mat-cell *matCellDef="let order">
                 <span class="badge-pill" [ngClass]="getStatusChipClass(order.status)">
                   {{ order.status }}
@@ -119,11 +125,37 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
 
             <!-- Actions Column -->
             <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef> Actions </th>
+              <th mat-header-cell *matHeaderCellDef> Action / Status Transition </th>
               <td mat-cell *matCellDef="let order">
-                <button mat-button class="update-action-btn" (click)="openUpdateModal(order)">
-                  <mat-icon>edit_note</mat-icon> Update Status
-                </button>
+                <div class="actions-cell-group">
+                  <!-- Quick Status Transition Menu Dropdown -->
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    class="quick-status-btn"
+                    [matMenuTriggerFor]="statusMenu"
+                    [disabled]="order.status === 'DELIVERED' || order.status === 'CANCELLED'">
+                    <span>Change Status</span>
+                    <mat-icon>arrow_drop_down</mat-icon>
+                  </button>
+
+                  <mat-menu #statusMenu="matMenu">
+                    <button
+                      mat-menu-item
+                      *ngFor="let nextStatus of getNextAllowedStatuses(order.status)"
+                      (click)="quickUpdateStatus(order, nextStatus)">
+                      <span class="badge-pill" [ngClass]="getStatusChipClass(nextStatus)">{{ nextStatus }}</span>
+                    </button>
+                    <div *ngIf="getNextAllowedStatuses(order.status).length === 0" class="no-status-item">
+                      No transitions available
+                    </div>
+                  </mat-menu>
+
+                  <!-- Open Modal for Details & Note -->
+                  <button mat-icon-button class="edit-note-btn" (click)="openUpdateModal(order)" matTooltip="Add Note / Custom Details">
+                    <mat-icon>edit_note</mat-icon>
+                  </button>
+                </div>
               </td>
             </ng-container>
 
@@ -142,15 +174,15 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
         <mat-paginator
           [length]="totalElements"
           [pageSize]="pageSize"
-          [pageSizeOptions]="[5, 10, 25, 50]"
+          [pageSizeOptions]="[10, 25, 50, 100]"
           (page)="onPageChange($event)"
           showFirstLastButtons>
         </mat-paginator>
       </div>
 
-      <!-- Update Order Status Glass Modal -->
+      <!-- Update Order Status Modal -->
       <div *ngIf="selectedOrder" class="update-modal-backdrop">
-        <div class="update-card glass-panel">
+        <div class="update-card surface-card">
           <div class="modal-header">
             <h3>Update Order #{{ selectedOrder.id }} Status</h3>
             <button mat-icon-button (click)="closeUpdateModal()"><mat-icon>close</mat-icon></button>
@@ -158,7 +190,8 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
 
           <div class="modal-body">
             <div class="order-details-box">
-              <p><strong>Customer:</strong> {{ selectedOrder.userEmail }}</p>
+              <p><strong>Customer:</strong> {{ selectedOrder.username || ('User #' + selectedOrder.userId) }} ({{ selectedOrder.userEmail }})</p>
+              <p><strong>Shipping Address:</strong> {{ selectedOrder.shippingAddress || 'N/A' }}</p>
               <p><strong>Current Status:</strong> <span class="badge-pill" [ngClass]="getStatusChipClass(selectedOrder.status)">{{ selectedOrder.status }}</span></p>
             </div>
 
@@ -166,7 +199,7 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>New Order Status</mat-label>
                 <mat-select formControlName="status">
-                  <mat-option *ngFor="let targetStatus of getAllowedTransitions(selectedOrder.status)" [value]="targetStatus">
+                  <mat-option *ngFor="let targetStatus of getNextAllowedStatuses(selectedOrder.status)" [value]="targetStatus">
                     {{ targetStatus }}
                   </mat-option>
                 </mat-select>
@@ -179,7 +212,7 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
 
               <div class="modal-actions">
                 <button mat-button type="button" (click)="closeUpdateModal()">Cancel</button>
-                <button mat-raised-button class="btn-glowing" type="submit" [disabled]="updateForm.invalid || updating">
+                <button mat-raised-button class="btn-solid-primary" type="submit" [disabled]="updateForm.invalid || updating">
                   <mat-spinner *ngIf="updating" diameter="20"></mat-spinner>
                   <span *ngIf="!updating">Save Changes</span>
                 </button>
@@ -210,13 +243,14 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
       margin: 0;
       font-size: 2rem;
       font-weight: 800;
+      color: var(--text-main);
     }
 
     .title-icon {
       font-size: 32px;
       width: 32px;
       height: 32px;
-      color: #38bdf8;
+      color: #4f46e5;
     }
 
     .page-subtitle {
@@ -225,8 +259,7 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
     }
 
     .refresh-btn {
-      color: var(--accent-cyan);
-      background: rgba(255, 255, 255, 0.05);
+      color: var(--primary);
     }
 
     .admin-card {
@@ -253,21 +286,44 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
 
     .order-id-cell {
       font-weight: 800;
-      color: #38bdf8;
+      color: #4f46e5;
     }
 
     .customer-cell {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-weight: 500;
+      gap: 10px;
     }
 
-    .cust-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
+    .user-avatar-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--primary-subtle);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-stack {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .user-name-title {
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .user-email-subtitle {
       color: var(--text-muted);
+      font-size: 0.78rem;
     }
 
     .date-cell {
@@ -278,12 +334,29 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
     .amount-cell {
       font-weight: 800;
       font-size: 1.05rem;
+      color: var(--text-main);
     }
 
-    .update-action-btn {
-      color: var(--accent-cyan);
-      border: 1px solid rgba(0, 242, 254, 0.3);
+    .actions-cell-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-status-btn {
       border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .edit-note-btn {
+      color: #4f46e5;
+    }
+
+    .no-status-item {
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
     }
 
     .empty-state {
@@ -296,18 +369,17 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
       font-size: 48px;
       width: 48px;
       height: 48px;
-      color: #38bdf8;
+      color: #0284c7;
     }
 
-    /* Glass Modal Backdrop */
+    /* Modal Backdrop */
     .update-modal-backdrop {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.6);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -318,14 +390,13 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
       width: 460px;
       max-width: 90vw;
       padding: 24px;
-      border: 1px solid var(--glass-border-glow);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--border-subtle);
       padding-bottom: 12px;
       margin-bottom: 16px;
     }
@@ -337,11 +408,15 @@ import { Order, OrderStatus } from '../../../../core/models/order.model';
     }
 
     .order-details-box {
-      background: rgba(255, 255, 255, 0.04);
+      background: #f8fafc;
       padding: 12px 16px;
-      border-radius: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
       margin-bottom: 16px;
       font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
     .modal-actions {
@@ -371,7 +446,9 @@ export class AdminOrderListComponent implements OnInit {
   constructor(
     private adminOrderService: AdminOrderService,
     private notificationService: NotificationService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.updateForm = this.fb.group({
       status: ['', Validators.required],
@@ -380,7 +457,12 @@ export class AdminOrderListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadOrders();
+    this.route.queryParams.subscribe(params => {
+      if (params['status']) {
+        this.selectedStatus = params['status'].toUpperCase();
+      }
+      this.loadOrders();
+    });
   }
 
   loadOrders(): void {
@@ -406,6 +488,11 @@ export class AdminOrderListComponent implements OnInit {
     if (this.paginator) {
       this.paginator.pageIndex = 0;
     }
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { status: this.selectedStatus === 'ALL' ? null : this.selectedStatus },
+      queryParamsHandling: 'merge'
+    });
     this.loadOrders();
   }
 
@@ -427,22 +514,36 @@ export class AdminOrderListComponent implements OnInit {
     }
   }
 
-  getAllowedTransitions(currentStatus: OrderStatus): OrderStatus[] {
+  getNextAllowedStatuses(currentStatus: OrderStatus): OrderStatus[] {
     switch (currentStatus) {
-      case 'PENDING': return ['PENDING', 'CONFIRMED', 'CANCELLED'];
-      case 'CONFIRMED': return ['CONFIRMED', 'PROCESSING', 'CANCELLED'];
-      case 'PROCESSING': return ['PROCESSING', 'SHIPPED', 'CANCELLED'];
-      case 'SHIPPED': return ['SHIPPED', 'DELIVERED'];
-      case 'DELIVERED': return ['DELIVERED'];
-      case 'CANCELLED': return ['CANCELLED'];
+      case 'PENDING': return ['CONFIRMED', 'CANCELLED'];
+      case 'CONFIRMED': return ['PROCESSING', 'CANCELLED'];
+      case 'PROCESSING': return ['SHIPPED', 'CANCELLED'];
+      case 'SHIPPED': return ['DELIVERED'];
       default: return [];
     }
   }
 
+  quickUpdateStatus(order: Order, newStatus: OrderStatus): void {
+    this.adminOrderService.updateOrderStatus(order.id, newStatus, order.note)
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.notificationService.success(`Order #${order.id} status updated to ${newStatus}`);
+            this.loadOrders();
+          }
+        },
+        error: (err) => {
+          this.notificationService.error(err.error?.message || 'Failed to update order status');
+        }
+      });
+  }
+
   openUpdateModal(order: Order): void {
     this.selectedOrder = order;
+    const allowed = this.getNextAllowedStatuses(order.status);
     this.updateForm.patchValue({
-      status: order.status,
+      status: allowed.length > 0 ? allowed[0] : order.status,
       note: order.note || ''
     });
   }

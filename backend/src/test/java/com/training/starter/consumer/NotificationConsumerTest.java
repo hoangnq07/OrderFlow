@@ -36,6 +36,7 @@ class NotificationConsumerTest {
                 UUID.randomUUID().toString(),
                 102L,
                 10L,
+                "user10@example.com",
                 BigDecimal.valueOf(50.00),
                 LocalDateTime.now(),
                 List.of(item)

@@ -138,6 +138,7 @@ public class OrderServiceImpl implements OrderService {
                 UUID.randomUUID().toString(),
                 savedOrder.getId(),
                 userId,
+                user.getEmail(),
                 savedOrder.getTotalAmount(),
                 LocalDateTime.now(),
                 eventItems
