@@ -4,6 +4,7 @@ import com.training.starter.entity.Order;
 import com.training.starter.enums.OrderStatus;
 import com.training.starter.event.OrderCreatedEvent;
 import com.training.starter.repository.OrderRepository;
+import com.training.starter.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +18,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +26,9 @@ class PaymentConsumerTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private ProductRepository productRepository;
 
     @InjectMocks
     private PaymentConsumer paymentConsumer;
