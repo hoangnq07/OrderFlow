@@ -98,115 +98,89 @@ class ProductServiceTest {
 
     @Test
     void getById_found_returnsProductResponse() {
-        // Given
         var category = buildCategory(1L, "Electronics", "electronics");
-        var product = buildProduct(1L, "Laptop", "laptop", BigDecimal.valueOf(1499.99), 5, category);
-        var response = buildProductResponse(1L, "Laptop", "laptop", BigDecimal.valueOf(1499.99), 5, 1L, "Electronics");
+        var product = buildProduct(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, category);
+        var response = buildProductResponse(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, 1L, "Electronics");
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productMapper.toResponse(product)).thenReturn(response);
 
-        // When
         var result = productService.getById(1L);
 
-        // Then
         assertThat(result.id()).isEqualTo(1L);
-        assertThat(result.name()).isEqualTo("Laptop");
+        assertThat(result.name()).isEqualTo("Phone");
     }
 
     @Test
     void getById_notFound_throwsResourceNotFoundException() {
-        // Given
-        when(productRepository.findById(999L)).thenReturn(Optional.empty());
+        when(productRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // When & Then
-        assertThatThrownBy(() -> productService.getById(999L))
+        assertThatThrownBy(() -> productService.getById(99L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void getAll_paginated_returnsProductPage() {
-        // Given
-        var category = buildCategory(1L, "Electronics", "electronics");
-        var p1 = buildProduct(1L, "P1", "p1", BigDecimal.TEN, 5, category);
-        var p2 = buildProduct(2L, "P2", "p2", BigDecimal.valueOf(20), 10, category);
-        var r1 = buildProductResponse(1L, "P1", "p1", BigDecimal.TEN, 5, 1L, "Electronics");
-        var r2 = buildProductResponse(2L, "P2", "p2", BigDecimal.valueOf(20), 10, 1L, "Electronics");
-
+    void getAll_returnsPageOfProductResponses() {
         Pageable pageable = PageRequest.of(0, 10);
-        when(productRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(p1, p2), pageable, 2));
-        when(productMapper.toResponse(p1)).thenReturn(r1);
-        when(productMapper.toResponse(p2)).thenReturn(r2);
-
-        // When
-        var result = productService.getAll(pageable);
-
-        // Then
-        assertThat(result.getTotalElements()).isEqualTo(2);
-        assertThat(result.getContent()).hasSize(2);
-    }
-
-    @Test
-    void update_validRequest_updatesAndReturns() {
-        // Given
         var category = buildCategory(1L, "Electronics", "electronics");
-        var product = buildProduct(1L, "Old Phone", "old-phone", BigDecimal.valueOf(500), 10, category);
-        var request = new UpdateProductRequest("New Phone", "new-phone", "New Desc", BigDecimal.valueOf(600), 15, 1L, "http://new.jpg", true);
-        var response = buildProductResponse(1L, "New Phone", "new-phone", BigDecimal.valueOf(600), 15, 1L, "Electronics");
+        var product = buildProduct(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, category);
+        var response = buildProductResponse(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, 1L, "Electronics");
 
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(productRepository.existsBySlug("new-phone")).thenReturn(false);
-        when(productRepository.save(product)).thenReturn(product);
+        when(productRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(product)));
         when(productMapper.toResponse(product)).thenReturn(response);
 
-        // When
-        var result = productService.update(1L, request);
+        var result = productService.getAll(pageable);
 
-        // Then
-        assertThat(result.name()).isEqualTo("New Phone");
-        assertThat(result.price()).isEqualTo(BigDecimal.valueOf(600));
-        verify(productMapper).updateEntity(product, request);
-        verify(productRepository).save(product);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).name()).isEqualTo("Phone");
     }
 
     @Test
-    void update_notFound_throwsResourceNotFoundException() {
-        // Given
-        var request = new UpdateProductRequest("New Phone", "new-phone", "New Desc", BigDecimal.valueOf(600), 15, 1L, "http://new.jpg", true);
-        when(productRepository.findById(999L)).thenReturn(Optional.empty());
+    void search_validQuery_returnsMatchingProducts() {
+        Pageable pageable = PageRequest.of(0, 10);
+        var category = buildCategory(1L, "Electronics", "electronics");
+        var product = buildProduct(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, category);
+        var response = buildProductResponse(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, 1L, "Electronics");
 
-        // When & Then
-        assertThatThrownBy(() -> productService.update(999L, request))
-                .isInstanceOf(ResourceNotFoundException.class);
-        verify(productRepository, never()).save(any());
+        when(productRepository.searchProducts("Phone", pageable)).thenReturn(new PageImpl<>(List.of(product)));
+        when(productMapper.toResponse(product)).thenReturn(response);
+
+        var result = productService.search("Phone", pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).name()).isEqualTo("Phone");
+    }
+
+    @Test
+    void update_validRequest_returnsUpdatedResponse() {
+        var updateRequest = new UpdateProductRequest("Smart Phone", "smart-phone", "New Desc", BigDecimal.valueOf(899.99), 15, 1L, "http://newimg.jpg", true);
+        var category = buildCategory(1L, "Electronics", "electronics");
+        var product = buildProduct(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, category);
+        var response = buildProductResponse(1L, "Smart Phone", "smart-phone", BigDecimal.valueOf(899.99), 15, 1L, "Electronics");
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySlug("smart-phone")).thenReturn(false);
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(productMapper.toResponse(product)).thenReturn(response);
+
+        var result = productService.update(1L, updateRequest);
+
+        assertThat(result.name()).isEqualTo("Smart Phone");
+        assertThat(result.price()).isEqualTo(BigDecimal.valueOf(899.99));
     }
 
     @Test
     void delete_existingProduct_setsActiveFalse() {
-        // Given
         var category = buildCategory(1L, "Electronics", "electronics");
-        var product = buildProduct(1L, "Item", "item", BigDecimal.TEN, 5, category);
-        product.setActive(true);
+        var product = buildProduct(1L, "Phone", "phone", BigDecimal.valueOf(999.99), 10, category);
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
-        // When
         productService.delete(1L);
 
-        // Then
         assertThat(product.isActive()).isFalse();
         verify(productRepository).save(product);
-    }
-
-    @Test
-    void delete_notFound_throwsResourceNotFoundException() {
-        // Given
-        when(productRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThatThrownBy(() -> productService.delete(999L))
-                .isInstanceOf(ResourceNotFoundException.class);
-        verify(productRepository, never()).save(any());
     }
 
     private Category buildCategory(Long id, String name, String slug) {

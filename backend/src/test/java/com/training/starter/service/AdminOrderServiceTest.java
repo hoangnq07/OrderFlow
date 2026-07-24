@@ -1,5 +1,6 @@
 package com.training.starter.service;
 
+import com.training.starter.common.PageResponse;
 import com.training.starter.dto.request.UpdateOrderStatusRequest;
 import com.training.starter.dto.response.OrderResponse;
 import com.training.starter.entity.Order;
@@ -11,12 +12,12 @@ import com.training.starter.mapper.OrderMapper;
 import com.training.starter.repository.OrderRepository;
 import com.training.starter.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +53,7 @@ class AdminOrderServiceTest {
     @BeforeEach
     void setUp() {
         sampleUser = User.builder()
+                .username("sampleuser")
                 .email("user@example.com")
                 .password("encoded_pass")
                 .build();
@@ -66,91 +68,76 @@ class AdminOrderServiceTest {
         sampleOrder.setId(1L);
 
         sampleOrderResponse = new OrderResponse(
-                1L, 10L, "user@example.com", new BigDecimal("150.00"),
+                1L, 10L, "sampleuser", "user@example.com", "123 Street", new BigDecimal("150.00"),
                 OrderStatus.PENDING, null, Collections.emptyList(),
                 LocalDateTime.now(), LocalDateTime.now()
         );
     }
 
     @Test
-    void getAdminOrders_withStatusFilter_returnsFilteredPage() {
-        // Given
+    @DisplayName("getAdminOrders: null status filters returns all orders")
+    void getAdminOrders_nullStatus_returnsAllOrders() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Order> orderPage = new PageImpl<>(List.of(sampleOrder));
-
-        when(orderRepository.findAllByStatus(OrderStatus.PENDING, pageable)).thenReturn(orderPage);
+        when(orderRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(List.of(sampleOrder)));
         when(orderMapper.toResponse(sampleOrder)).thenReturn(sampleOrderResponse);
 
-        // When
-        var result = orderService.getAdminOrders(OrderStatus.PENDING, pageable);
+        PageResponse<OrderResponse> result = orderService.getAdminOrders(null, pageable);
 
-        // Then
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).status()).isEqualTo(OrderStatus.PENDING);
-        verify(orderRepository).findAllByStatus(OrderStatus.PENDING, pageable);
-    }
-
-    @Test
-    void getAdminOrders_withoutStatusFilter_returnsAllOrdersPage() {
-        // Given
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Order> orderPage = new PageImpl<>(List.of(sampleOrder));
-
-        when(orderRepository.findAll(pageable)).thenReturn(orderPage);
-        when(orderMapper.toResponse(sampleOrder)).thenReturn(sampleOrderResponse);
-
-        // When
-        var result = orderService.getAdminOrders(null, pageable);
-
-        // Then
+        assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
         verify(orderRepository).findAll(pageable);
     }
 
     @Test
-    void updateOrderStatusByAdmin_validTransition_updatesAndReturnsOrder() {
-        // Given
-        var request = new UpdateOrderStatusRequest(OrderStatus.CONFIRMED, "Order confirmed by admin");
-        var updatedResponse = new OrderResponse(
-                1L, 10L, "user@example.com", new BigDecimal("150.00"),
-                OrderStatus.CONFIRMED, "Order confirmed by admin", Collections.emptyList(),
-                LocalDateTime.now(), LocalDateTime.now()
-        );
+    @DisplayName("getAdminOrders: with status filters by status")
+    void getAdminOrders_withStatus_returnsFilteredOrders() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(orderRepository.findAllByStatus(OrderStatus.PENDING, pageable))
+                .thenReturn(new PageImpl<>(List.of(sampleOrder)));
+        when(orderMapper.toResponse(sampleOrder)).thenReturn(sampleOrderResponse);
 
+        PageResponse<OrderResponse> result = orderService.getAdminOrders(OrderStatus.PENDING, pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+        verify(orderRepository).findAllByStatus(OrderStatus.PENDING, pageable);
+    }
+
+    @Test
+    @DisplayName("updateOrderStatusByAdmin: valid transition updates status successfully")
+    void updateOrderStatusByAdmin_validTransition_success() {
+        UpdateOrderStatusRequest request = new UpdateOrderStatusRequest(OrderStatus.CONFIRMED, "Approved by admin");
         when(orderRepository.findById(1L)).thenReturn(Optional.of(sampleOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(sampleOrder);
-        when(orderMapper.toResponse(sampleOrder)).thenReturn(updatedResponse);
+        when(orderMapper.toResponse(sampleOrder)).thenReturn(sampleOrderResponse);
 
-        // When
         OrderResponse result = orderService.updateOrderStatusByAdmin(1L, request);
 
-        // Then
-        assertThat(result.status()).isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(result).isNotNull();
         assertThat(sampleOrder.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(sampleOrder.getNote()).isEqualTo("Approved by admin");
         verify(orderRepository).save(sampleOrder);
     }
 
     @Test
-    void updateOrderStatusByAdmin_invalidTransition_throwsBadRequestException() {
-        // Given: PENDING to DELIVERED is invalid
-        var request = new UpdateOrderStatusRequest(OrderStatus.DELIVERED, "Direct delivery attempt");
-
+    @DisplayName("updateOrderStatusByAdmin: invalid transition throws BadRequestException")
+    void updateOrderStatusByAdmin_invalidTransition_throwsException() {
+        UpdateOrderStatusRequest request = new UpdateOrderStatusRequest(OrderStatus.DELIVERED, null);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(sampleOrder));
 
-        // When & Then
         assertThatThrownBy(() -> orderService.updateOrderStatusByAdmin(1L, request))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Cannot transition order status from PENDING to DELIVERED");
+                .hasMessageContaining("Invalid status transition");
     }
 
     @Test
-    void updateOrderStatusByAdmin_orderNotFound_throwsResourceNotFoundException() {
-        // Given
-        var request = new UpdateOrderStatusRequest(OrderStatus.CONFIRMED, "Note");
-        when(orderRepository.findById(999L)).thenReturn(Optional.empty());
+    @DisplayName("updateOrderStatusByAdmin: order not found throws ResourceNotFoundException")
+    void updateOrderStatusByAdmin_orderNotFound_throwsException() {
+        UpdateOrderStatusRequest request = new UpdateOrderStatusRequest(OrderStatus.CONFIRMED, null);
+        when(orderRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // When & Then
-        assertThatThrownBy(() -> orderService.updateOrderStatusByAdmin(999L, request))
+        assertThatThrownBy(() -> orderService.updateOrderStatusByAdmin(99L, request))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 }

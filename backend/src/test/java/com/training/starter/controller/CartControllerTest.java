@@ -10,13 +10,16 @@ import com.training.starter.enums.Role;
 import com.training.starter.repository.UserRepository;
 import com.training.starter.security.JwtAuthenticationFilter;
 import com.training.starter.security.RateLimitingFilter;
+import com.training.starter.security.SecurityConfig;
 import com.training.starter.service.CartService;
+import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,6 +33,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,7 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CartController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
+@Import(SecurityConfig.class)
 class CartControllerTest {
 
     @Autowired
@@ -64,7 +69,18 @@ class CartControllerTest {
     private UsernamePasswordAuthenticationToken auth;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        doAnswer(invocation -> {
+            FilterChain chain = invocation.getArgument(2);
+            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+        doAnswer(invocation -> {
+            FilterChain chain = invocation.getArgument(2);
+            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(rateLimitingFilter).doFilter(any(), any(), any());
+
         mockUser = User.builder()
                 .username("testuser")
                 .email("test@example.com")
@@ -93,6 +109,12 @@ class CartControllerTest {
                 .andExpect(jsonPath("$.data.userId").value(1))
                 .andExpect(jsonPath("$.data.totalItems").value(2))
                 .andExpect(jsonPath("$.data.items[0].productName").value("Phone"));
+    }
+
+    @Test
+    void getCart_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/cart"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

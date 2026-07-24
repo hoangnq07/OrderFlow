@@ -6,28 +6,29 @@ export class NotificationService {
   constructor(private snackBar: MatSnackBar) {}
 
   success(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
+    this.snackBar.open(message, 'DISMISS', {
+      duration: 3500,
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      panelClass: ['success-snackbar']
+      panelClass: ['custom-toast', 'success-toast']
     });
   }
 
   error(message: string): void {
-    this.snackBar.open(message, 'Close', {
+    this.snackBar.open(message, 'DISMISS', {
       duration: 5000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      panelClass: ['error-snackbar']
+      panelClass: ['custom-toast', 'error-toast']
     });
   }
 
   info(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
+    this.snackBar.open(message, 'DISMISS', {
+      duration: 3500,
       horizontalPosition: 'end',
-      verticalPosition: 'top'
+      verticalPosition: 'top',
+      panelClass: ['custom-toast', 'info-toast']
     });
   }
 }

@@ -29,6 +29,7 @@ class RabbitMQDLQIntegrationTest extends BaseIntegrationTest {
                 eventId,
                 99999L,
                 1L,
+                "user1@example.com",
                 new BigDecimal("99.99"),
                 LocalDateTime.now(),
                 Collections.emptyList()

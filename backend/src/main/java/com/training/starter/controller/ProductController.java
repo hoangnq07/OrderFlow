@@ -27,20 +27,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
-@Tag(name = "Products", description = "Product CRUD and pagination operations")
+@Tag(name = "Products", description = "Product CRUD, search and pagination operations")
 public class ProductController {
 
     private final ProductService productService;
 
     @GetMapping
-    @Operation(summary = "List all products with pagination")
+    @Operation(summary = "List all products with optional search query and pagination")
     public ApiResponse<PageResponse<ProductResponse>> getAll(
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
-        var result = productService.getAll(PageRequest.of(page, size, sort));
+        var pageable = PageRequest.of(page, size, sort);
+        var result = (q != null && !q.isBlank())
+                ? productService.search(q, pageable)
+                : productService.getAll(pageable);
+        return ApiResponse.success(PageResponse.from(result, r -> r));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Full-text search products by query keyword")
+    public ApiResponse<PageResponse<ProductResponse>> search(
+            @RequestParam("q") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        var result = productService.search(query, PageRequest.of(page, size, sort));
         return ApiResponse.success(PageResponse.from(result, r -> r));
     }
 

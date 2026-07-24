@@ -33,6 +33,7 @@ class OrderEventPublisherTest {
                 UUID.randomUUID().toString(),
                 100L,
                 1L,
+                "user@example.com",
                 BigDecimal.valueOf(999.99),
                 LocalDateTime.now(),
                 List.of(item)

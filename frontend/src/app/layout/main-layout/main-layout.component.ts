@@ -28,15 +28,12 @@ import { Observable } from 'rxjs';
     ThreeBgComponent
   ],
   template: `
-    <!-- Interactive 3D Canvas Background -->
-    <app-three-bg></app-three-bg>
-
     <div class="user-layout-wrapper">
-      <!-- Floating Glass Navbar -->
-      <header class="glass-navbar">
+      <!-- Floating Solid Navbar -->
+      <header class="solid-navbar">
         <div class="nav-container">
           <!-- Brand Logo -->
-          <a routerLink="/dashboard" class="brand-logo">
+          <a routerLink="/products" class="brand-logo">
             <div class="logo-icon"><mat-icon>layers</mat-icon></div>
             <div class="logo-brand-wrap">
               <span class="logo-text">OrderFlow</span>
@@ -46,25 +43,19 @@ import { Observable } from 'rxjs';
 
           <!-- Nav Links -->
           <nav class="nav-links">
-            <a routerLink="/dashboard" routerLinkActive="active-link" class="nav-item">
-              <mat-icon>dashboard</mat-icon>
-              <span>Dashboard</span>
-            </a>
             <a routerLink="/products" routerLinkActive="active-link" class="nav-item">
               <mat-icon>storefront</mat-icon>
               <span>Storefront</span>
-            </a>
-            <a routerLink="/cart" routerLinkActive="active-link" class="nav-item">
-              <mat-icon [matBadge]="cartCount$ | async" [matBadgeHidden]="(cartCount$ | async) === 0" matBadgeColor="accent">shopping_cart</mat-icon>
-              <span>Cart</span>
             </a>
             <a routerLink="/orders" routerLinkActive="active-link" class="nav-item">
               <mat-icon>receipt_long</mat-icon>
               <span>My Orders</span>
             </a>
-            <a *ngIf="authService.getRole() === 'ADMIN'" routerLink="/admin/orders" routerLinkActive="active-link" class="nav-item admin-badge-link">
-              <mat-icon>admin_panel_settings</mat-icon>
-              <span>Admin Portal</span>
+
+            <!-- Single Dedicated Admin Dashboard Button (Only visible if logged-in user is ADMIN) -->
+            <a *ngIf="authService.getRole() === 'ADMIN'" routerLink="/admin/dashboard" class="nav-item admin-badge-link" title="Open Admin Portal">
+              <mat-icon>space_dashboard</mat-icon>
+              <span>Admin Dashboard</span>
             </a>
           </nav>
 
@@ -80,7 +71,6 @@ import { Observable } from 'rxjs';
               </div>
               <div class="user-info-brief">
                 <span class="user-name">{{ authService.getUsername() }}</span>
-                <span class="user-role-tag">{{ authService.getRole() }}</span>
               </div>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </div>
@@ -88,7 +78,6 @@ import { Observable } from 'rxjs';
             <mat-menu #userMenu="matMenu" class="glass-menu">
               <div class="menu-header">
                 <div class="menu-user-title">{{ authService.getUsername() }}</div>
-                <div class="menu-user-role badge-pill badge-confirmed">{{ authService.getRole() }}</div>
               </div>
               <button mat-menu-item routerLink="/products">
                 <mat-icon>storefront</mat-icon>
@@ -102,8 +91,8 @@ import { Observable } from 'rxjs';
                 <mat-icon>receipt_long</mat-icon>
                 <span>My Orders</span>
               </button>
-              <button *ngIf="authService.getRole() === 'ADMIN'" mat-menu-item routerLink="/admin/orders">
-                <mat-icon>dashboard_customize</mat-icon>
+              <button *ngIf="authService.getRole() === 'ADMIN'" mat-menu-item routerLink="/admin/dashboard">
+                <mat-icon color="primary">admin_panel_settings</mat-icon>
                 <span>Admin Dashboard</span>
               </button>
               <mat-divider></mat-divider>
@@ -122,7 +111,7 @@ import { Observable } from 'rxjs';
       </main>
 
       <!-- Clean Enterprise Footer -->
-      <footer class="glass-footer">
+      <footer class="solid-footer">
         <div class="footer-content">
           <div class="footer-brand">
             <span>&copy; 2026 OrderFlow Platform Inc. All rights reserved.</span>
@@ -132,7 +121,11 @@ import { Observable } from 'rxjs';
             <span>•</span>
             <a routerLink="/cart">Cart</a>
             <span>•</span>
-            <a routerLink="/dashboard">System Metrics</a>
+            <a routerLink="/orders">My Orders</a>
+            <ng-container *ngIf="authService.getRole() === 'ADMIN'">
+              <span>•</span>
+              <a routerLink="/admin/dashboard">Admin Portal</a>
+            </ng-container>
           </div>
         </div>
       </footer>
@@ -145,18 +138,17 @@ import { Observable } from 'rxjs';
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      background-color: var(--bg-main);
     }
 
-    /* Glass Navbar */
-    .glass-navbar {
+    /* Solid Navbar */
+    .solid-navbar {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
-      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
       padding: 0 24px;
     }
 
@@ -179,13 +171,13 @@ import { Observable } from 'rxjs';
     .logo-icon {
       width: 40px;
       height: 40px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%);
+      border-radius: 10px;
+      background: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
     }
 
     .logo-brand-wrap {
@@ -206,7 +198,7 @@ import { Observable } from 'rxjs';
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: #6366f1;
+      color: var(--primary);
     }
 
     .nav-links {
@@ -221,27 +213,32 @@ import { Observable } from 'rxjs';
       gap: 8px;
       padding: 8px 14px;
       border-radius: 10px;
-      color: #475569;
+      color: var(--text-secondary);
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 650;
       font-size: 0.9rem;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
 
     .nav-item:hover {
-      color: #4f46e5;
-      background: rgba(99, 102, 241, 0.08);
+      color: var(--primary);
+      background: var(--primary-subtle);
     }
 
     .active-link {
-      color: #4f46e5 !important;
-      background: rgba(99, 102, 241, 0.12) !important;
+      color: var(--primary) !important;
+      background: var(--primary-subtle) !important;
       font-weight: 700;
     }
 
     .admin-badge-link {
       color: #7c3aed !important;
-      background: rgba(124, 58, 237, 0.08);
+      background: #f3e8ff;
+      border: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .admin-badge-link:hover {
+      background: #e9d5ff !important;
     }
 
     .user-controls {
@@ -259,24 +256,23 @@ import { Observable } from 'rxjs';
       align-items: center;
       gap: 10px;
       padding: 5px 12px;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
 
     .user-profile-menu:hover {
-      border-color: #cbd5e1;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+      border-color: var(--border-strong);
     }
 
     .avatar-ring {
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      background: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -297,15 +293,8 @@ import { Observable } from 'rxjs';
       color: #0f172a;
     }
 
-    .user-role-tag {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-
     .dropdown-icon {
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 18px;
       width: 18px;
       height: 18px;
@@ -313,12 +302,11 @@ import { Observable } from 'rxjs';
 
     .menu-header {
       padding: 12px 16px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .menu-user-title {
       font-weight: 700;
-      margin-bottom: 4px;
       color: #0f172a;
     }
 
@@ -331,10 +319,9 @@ import { Observable } from 'rxjs';
       box-sizing: border-box;
     }
 
-    .glass-footer {
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid #e2e8f0;
+    .solid-footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border-subtle);
       padding: 20px 24px;
       margin-top: 40px;
     }
@@ -347,7 +334,7 @@ import { Observable } from 'rxjs';
       align-items: center;
       flex-wrap: wrap;
       gap: 16px;
-      color: #64748b;
+      color: var(--text-secondary);
       font-size: 0.85rem;
     }
 
@@ -358,14 +345,14 @@ import { Observable } from 'rxjs';
     }
 
     .footer-links a {
-      color: #64748b;
+      color: var(--text-secondary);
       text-decoration: none;
       font-weight: 600;
-      transition: color 0.2s ease;
+      transition: color 0.15s ease;
     }
 
     .footer-links a:hover {
-      color: #4f46e5;
+      color: var(--primary);
     }
   `]
 })

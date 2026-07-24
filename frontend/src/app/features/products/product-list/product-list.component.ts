@@ -1,52 +1,63 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ProductResponse } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
-    MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    MatProgressSpinnerModule,
-    MatDialogModule
+    MatInputModule,
+    MatFormFieldModule,
+    MatProgressSpinnerModule
   ],
   template: `
     <div class="product-page-container">
       <!-- Page Header -->
       <div class="product-header">
         <div>
-          <h1 class="page-title text-gradient-cyan">
-            {{ isAdmin ? 'Product Inventory Management' : 'Featured Storefront Catalog' }}
-          </h1>
-          <p class="page-subtitle">
-            {{ isAdmin ? 'Manage catalog items, prices, stock levels and categories' : 'Discover premium items crafted for seamless ordering' }}
-          </p>
+          <span class="eyebrow">Storefront Collection</span>
+          <h1 class="page-title">Featured Storefront Catalog</h1>
+          <p class="page-subtitle">Discover premium items crafted for seamless order processing</p>
         </div>
 
-        @if (isAdmin) {
-          <a mat-raised-button class="btn-glowing" routerLink="/products/new">
-            <mat-icon>add_box</mat-icon> Create New Product
-          </a>
-        }
+        <!-- Search Bar Component -->
+        <div class="search-bar-container">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search products...</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="searchQuery"
+              (keyup.enter)="onSearch()"
+              placeholder="e.g. Laptop, Mouse..."
+            />
+            <button *ngIf="searchQuery" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+            <button matSuffix mat-icon-button (click)="onSearch()" aria-label="Search">
+              <mat-icon class="search-icon">search</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
       </div>
 
       @if (loading) {
@@ -55,14 +66,15 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
         </div>
       }
 
-      <!-- USER VIEW: 3D Floating Product Grid -->
-      @if (!isAdmin && !loading) {
+      <!-- USER VIEW: Solid Clean Product Grid -->
+      @if (!loading) {
         <div class="storefront-grid">
           @for (product of products; track product.id) {
             <div class="tilt-card-container">
-              <div class="tilt-card glass-panel glass-panel-hover product-card">
+              <div class="tilt-card surface-card surface-card-hover product-card">
                 <div class="product-image-box">
-                  <img [src]="product.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'" (error)="onImageError($event)" [alt]="product.name" class="product-img" />
+                  <img [src]="product.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'"
+                       (error)="onImageError($event)" [alt]="product.name" class="product-img" />
                   <div class="category-pill-badge">{{ product.categoryName || 'General' }}</div>
                 </div>
 
@@ -71,8 +83,8 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                   <p class="product-slug-text">{{ product.slug }}</p>
 
                   <div class="price-stock-row">
-                    <div class="price-tag text-gradient-cyan">
-                      {{ product.price | currency:'USD':'symbol':'1.2-2' }}
+                    <div class="price-tag">
+                      \${{ product.price | number:'1.2-2' }}
                     </div>
 
                     <div class="stock-indicator" [class.in-stock]="product.stock > 0" [class.out-of-stock]="product.stock <= 0">
@@ -83,7 +95,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 
                   <button 
                     mat-raised-button 
-                    class="btn-glowing-purple add-cart-btn" 
+                    class="btn-solid-primary add-cart-btn" 
                     (click)="onAddToCart(product)" 
                     [disabled]="!product.active || product.stock <= 0">
                     <mat-icon>shopping_bag</mat-icon> Add to Cart
@@ -92,89 +104,16 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
               </div>
             </div>
           } @empty {
-            <div class="empty-state glass-panel">
-              <mat-icon class="empty-icon">inventory</mat-icon>
-              <h3>No products found in storefront</h3>
+            <div class="empty-state surface-card">
+              <mat-icon class="empty-icon">search_off</mat-icon>
+              <h3>No products found matching "{{ searchQuery }}"</h3>
+              <button mat-button color="primary" (click)="clearSearch()" *ngIf="searchQuery">Clear Search Filter</button>
             </div>
           }
         </div>
       }
 
-      <!-- ADMIN VIEW: High-Density Glass Data Table -->
-      @if (isAdmin && !loading) {
-        <div class="admin-table-container glass-panel">
-          <table mat-table [dataSource]="products" class="full-width">
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef>ID</th>
-              <td mat-cell *matCellDef="let product">#{{ product.id }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="imageUrl">
-              <th mat-header-cell *matHeaderCellDef>Preview</th>
-              <td mat-cell *matCellDef="let product">
-                <img [src]="product.imageUrl || 'https://via.placeholder.com/40'" (error)="onImageError($event)" [alt]="product.name" class="table-thumb" />
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Product Name</th>
-              <td mat-cell *matCellDef="let product">
-                <div class="table-product-name">{{ product.name }}</div>
-                <div class="table-slug">{{ product.slug }}</div>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="categoryName">
-              <th mat-header-cell *matHeaderCellDef>Category</th>
-              <td mat-cell *matCellDef="let product">
-                <span class="badge-pill badge-confirmed">{{ product.categoryName || 'General' }}</span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="price">
-              <th mat-header-cell *matHeaderCellDef>Price</th>
-              <td mat-cell *matCellDef="let product" style="font-weight: 700; color: #38bdf8;">
-                {{ product.price | currency:'USD':'symbol':'1.2-2' }}
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="stock">
-              <th mat-header-cell *matHeaderCellDef>Stock</th>
-              <td mat-cell *matCellDef="let product">
-                <span [style.color]="product.stock > 0 ? '#34d399' : '#f87171'" style="font-weight: 700;">
-                  {{ product.stock }}
-                </span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="active">
-              <th mat-header-cell *matHeaderCellDef>Status</th>
-              <td mat-cell *matCellDef="let product">
-                <span class="badge-pill" [class.badge-delivered]="product.active" [class.badge-pending]="!product.active">
-                  {{ product.active ? 'ACTIVE' : 'INACTIVE' }}
-                </span>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Manage</th>
-              <td mat-cell *matCellDef="let product">
-                <a mat-icon-button [routerLink]="['/products', product.id, 'edit']" title="Edit Product" style="color: #38bdf8;">
-                  <mat-icon>edit</mat-icon>
-                </a>
-                <button mat-icon-button color="warn" (click)="onDelete(product)" title="Delete Product">
-                  <mat-icon>delete_forever</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </div>
-      }
-
-      <div class="pagination-wrapper glass-panel">
+      <div class="pagination-wrapper surface-card">
         <mat-paginator
           [length]="totalElements"
           [pageSize]="pageSize"
@@ -201,11 +140,20 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
       gap: 16px;
     }
 
+    .eyebrow {
+      color: #0284c7;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
     .page-title {
-      margin: 0;
+      margin: 4px 0 0 0;
       font-size: 2rem;
       font-weight: 800;
       letter-spacing: -0.5px;
+      color: var(--text-main);
     }
 
     .page-subtitle {
@@ -214,7 +162,20 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
       font-size: 0.95rem;
     }
 
-    /* Storefront Grid & 3D Cards */
+    .search-bar-container {
+      min-width: 300px;
+    }
+
+    .search-field {
+      width: 100%;
+      margin-bottom: -1.25em;
+    }
+
+    .search-icon {
+      color: #4f46e5;
+    }
+
+    /* Storefront Grid & Solid Cards */
     .storefront-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -236,32 +197,31 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
       height: 200px;
       border-radius: 12px;
       overflow: hidden;
-      background: rgba(0, 0, 0, 0.3);
+      background: #f1f5f9;
     }
 
     .product-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease;
+      transition: transform 0.3s ease;
     }
 
     .product-card:hover .product-img {
-      transform: scale(1.08);
+      transform: scale(1.05);
     }
 
     .category-pill-badge {
       position: absolute;
       top: 12px;
       right: 12px;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(8px);
-      color: var(--accent-cyan);
+      background: #0284c7;
+      color: #ffffff;
       padding: 4px 10px;
-      border-radius: 12px;
+      border-radius: 8px;
       font-size: 0.75rem;
       font-weight: 700;
-      border: 1px solid rgba(0, 242, 254, 0.3);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
     }
 
     .product-info {
@@ -295,6 +255,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
     .price-tag {
       font-size: 1.35rem;
       font-weight: 800;
+      color: #4f46e5;
     }
 
     .stock-indicator {
@@ -311,35 +272,13 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
       height: 16px;
     }
 
-    .in-stock { color: var(--accent-emerald); }
-    .out-of-stock { color: #f87171; }
+    .in-stock { color: #10b981; }
+    .out-of-stock { color: #ef4444; }
 
     .add-cart-btn {
       width: 100%;
       margin-top: 12px;
-    }
-
-    /* Admin Table Styling */
-    .admin-table-container {
-      overflow-x: auto;
-    }
-
-    .table-thumb {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 1px solid var(--glass-border);
-    }
-
-    .table-product-name {
-      font-weight: 700;
-      color: var(--text-main);
-    }
-
-    .table-slug {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      height: 42px;
     }
 
     .pagination-wrapper {
@@ -363,16 +302,16 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
       font-size: 48px;
       width: 48px;
       height: 48px;
-      color: var(--accent-cyan);
+      color: #0284c7;
     }
   `]
 })
 export class ProductListComponent implements OnInit {
   products: ProductResponse[] = [];
-  displayedColumns = ['id', 'imageUrl', 'name', 'categoryName', 'price', 'stock', 'active', 'actions'];
   totalElements = 0;
   pageSize = 8;
   currentPage = 0;
+  searchQuery = '';
   loading = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -380,14 +319,8 @@ export class ProductListComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private cartService: CartService,
-    public authService: AuthService,
-    private notification: NotificationService,
-    private dialog: MatDialog
+    private notification: NotificationService
   ) {}
-
-  get isAdmin(): boolean {
-    return this.authService.getRole() === 'ADMIN';
-  }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -395,7 +328,11 @@ export class ProductListComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    this.productService.getProducts(this.currentPage, this.pageSize).subscribe({
+    const request$ = (this.searchQuery && this.searchQuery.trim().length > 0)
+      ? this.productService.searchProducts(this.searchQuery.trim(), this.currentPage, this.pageSize)
+      : this.productService.getProducts(this.currentPage, this.pageSize);
+
+    request$.subscribe({
       next: (res) => {
         this.loading = false;
         if (res.success && res.data) {
@@ -408,6 +345,23 @@ export class ProductListComponent implements OnInit {
         this.notification.error('Failed to load product catalog');
       }
     });
+  }
+
+  onSearch(): void {
+    this.currentPage = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
+    this.loadProducts();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.currentPage = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
+    this.loadProducts();
   }
 
   onAddToCart(product: ProductResponse): void {
@@ -431,29 +385,5 @@ export class ProductListComponent implements OnInit {
 
   onImageError(event: Event): void {
     (event.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';
-  }
-
-  onDelete(product: ProductResponse): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Delete Product',
-        message: `Are you sure you want to delete product "${product.name}"?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
-        this.productService.deleteProduct(product.id).subscribe({
-          next: () => {
-            this.notification.success('Product deleted successfully');
-            if (this.products.length === 1 && this.currentPage > 0) {
-              this.currentPage--;
-            }
-            this.loadProducts();
-          },
-          error: () => this.notification.error('Failed to delete product')
-        });
-      }
-    });
   }
 }

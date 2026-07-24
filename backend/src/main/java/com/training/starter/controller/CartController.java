@@ -83,9 +83,10 @@ public class CartController {
         if (auth == null || auth.getName() == null) {
             throw new ResourceNotFoundException("Unauthenticated user context");
         }
-        String username = auth.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+        String identifier = auth.getName();
+        User user = userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByEmail(identifier))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + identifier));
         return user.getId();
     }
 }

@@ -4,9 +4,9 @@ import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
@@ -24,17 +24,20 @@ import { CheckoutDialogComponent } from './checkout-dialog/checkout-dialog.compo
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatTableModule,
     MatProgressSpinnerModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
   template: `
     <div class="cart-container">
-      <div class="cart-header">
-        <h1 class="page-title text-gradient-cyan">
-          <mat-icon class="title-icon">shopping_cart</mat-icon> Shopping Cart
-        </h1>
-        <p class="page-subtitle">Review items, adjust quantities, and proceed to instant checkout</p>
+      <!-- Header -->
+      <div class="cart-page-header">
+        <div>
+          <h1 class="page-title text-gradient-cyan">
+            <mat-icon class="title-icon">shopping_bag</mat-icon> Shopping Cart
+          </h1>
+          <p class="page-subtitle">Review items and manage quantities in your bag</p>
+        </div>
       </div>
 
       <div *ngIf="loading" class="loading-container">
@@ -42,119 +45,90 @@ import { CheckoutDialogComponent } from './checkout-dialog/checkout-dialog.compo
       </div>
 
       <div *ngIf="!loading">
-        <!-- Empty Cart State -->
+        <!-- Empty Cart View -->
         <div *ngIf="!cart || cart.items.length === 0" class="empty-cart-card glass-panel">
           <div class="empty-content">
-            <div class="empty-icon-circle">
-              <mat-icon class="empty-icon">remove_shopping_cart</mat-icon>
-            </div>
-            <h2>Your Shopping Cart is Empty</h2>
-            <p>Discover our catalog items and add them to your cart with one click.</p>
-            <a mat-raised-button class="btn-glowing" routerLink="/products">
-              <mat-icon>storefront</mat-icon> Explore Storefront Catalog
+            <mat-icon class="empty-icon">shopping_bag</mat-icon>
+            <h2 class="text-gradient-cyan">Your Shopping Cart is Empty</h2>
+            <p>Browse our storefront catalog to add items to your cart.</p>
+            <a mat-raised-button class="btn-glowing explore-btn" routerLink="/products">
+              <mat-icon>storefront</mat-icon> Browse Products
             </a>
           </div>
         </div>
 
-        <!-- Active Cart View -->
-        <div *ngIf="cart && cart.items.length > 0" class="cart-layout">
-          <!-- Cart Items List -->
-          <div class="cart-items-section glass-panel">
-            <table mat-table [dataSource]="cart.items" class="full-width">
-              <!-- Image & Product -->
-              <ng-container matColumnDef="image">
-                <th mat-header-cell *matHeaderCellDef>Product</th>
-                <td mat-cell *matCellDef="let item">
-                  <div class="product-info">
-                    <img [src]="item.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'" (error)="onImageError($event)" [alt]="item.productName" class="item-thumb" />
-                    <div>
-                      <div class="product-name">{{ item.productName }}</div>
-                      <div class="product-slug">{{ item.productSlug }}</div>
-                    </div>
-                  </div>
-                </td>
-              </ng-container>
+        <!-- Active Cart Layout -->
+        <div *ngIf="cart && cart.items.length > 0" class="cart-grid">
+          
+          <!-- Items List Column -->
+          <div class="cart-items-card glass-panel">
+            <div class="card-header">
+              <h3>Cart Items ({{ cart.totalItems }})</h3>
+              <button mat-button color="warn" class="clear-all-btn" (click)="onClearCart()" [disabled]="actionLoading">
+                <mat-icon>delete_sweep</mat-icon> Clear Cart
+              </button>
+            </div>
 
-              <!-- Unit Price -->
-              <ng-container matColumnDef="price">
-                <th mat-header-cell *matHeaderCellDef>Unit Price</th>
-                <td mat-cell *matCellDef="let item" class="price-cell">
-                  {{ item.unitPrice | currency:'USD':'symbol':'1.2-2' }}
-                </td>
-              </ng-container>
+            <div class="items-list">
+              <div *ngFor="let item of cart.items" class="cart-item-row">
+                <!-- Image -->
+                <img [src]="item.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'"
+                     (error)="onImageError($event)" [alt]="item.productName" class="item-img" />
 
-              <!-- Quantity Controls -->
-              <ng-container matColumnDef="quantity">
-                <th mat-header-cell *matHeaderCellDef>Quantity</th>
-                <td mat-cell *matCellDef="let item">
-                  <div class="quantity-controls">
-                    <button mat-icon-button class="qty-btn" (click)="updateQuantity(item, item.quantity - 1)" [disabled]="actionLoading">
-                      <mat-icon>remove</mat-icon>
-                    </button>
-                    <span class="quantity-value">{{ item.quantity }}</span>
-                    <button mat-icon-button class="qty-btn" (click)="updateQuantity(item, item.quantity + 1)" [disabled]="actionLoading">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </ng-container>
+                <!-- Details -->
+                <div class="item-details">
+                  <h4 class="item-name">{{ item.productName }}</h4>
+                  <span class="item-unit-price">{{ item.unitPrice | currency:'USD':'symbol':'1.2-2' }}</span>
+                </div>
 
-              <!-- Subtotal -->
-              <ng-container matColumnDef="subtotal">
-                <th mat-header-cell *matHeaderCellDef>Subtotal</th>
-                <td mat-cell *matCellDef="let item" class="subtotal-cell text-gradient-cyan">
-                  {{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}
-                </td>
-              </ng-container>
-
-              <!-- Actions -->
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef></th>
-                <td mat-cell *matCellDef="let item">
-                  <button mat-icon-button color="warn" (click)="removeItem(item)" [disabled]="actionLoading" title="Remove item">
-                    <mat-icon>delete_outline</mat-icon>
+                <!-- Quantity Picker -->
+                <div class="quantity-picker">
+                  <button mat-icon-button class="qty-btn" (click)="updateQuantity(item, item.quantity - 1)" [disabled]="actionLoading">
+                    <mat-icon>remove</mat-icon>
                   </button>
-                </td>
-              </ng-container>
+                  <span class="qty-val">{{ item.quantity }}</span>
+                  <button mat-icon-button class="qty-btn" (click)="updateQuantity(item, item.quantity + 1)" [disabled]="actionLoading">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
 
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            </table>
-          </div>
+                <!-- Subtotal -->
+                <div class="subtotal-box">
+                  <strong class="subtotal-price text-gradient-cyan">{{ item.subtotal | currency:'USD':'symbol':'1.2-2' }}</strong>
+                </div>
 
-          <!-- Order Summary Sidebar -->
-          <div class="cart-summary-section glass-panel">
-            <h3 class="summary-title text-gradient-purple">Order Summary</h3>
-
-            <div class="summary-content">
-              <div class="summary-row">
-                <span>Total Items:</span>
-                <strong class="summary-val">{{ cart.totalItems }}</strong>
-              </div>
-
-              <div class="summary-row">
-                <span>Shipping Fee:</span>
-                <span class="free-shipping">FREE (INSTANT)</span>
-              </div>
-
-              <div class="summary-divider"></div>
-
-              <div class="summary-row total-row">
-                <span>Total Amount:</span>
-                <span class="total-amount text-gradient-cyan">{{ cart.totalAmount | currency:'USD':'symbol':'1.2-2' }}</span>
-              </div>
-
-              <div class="summary-actions">
-                <button mat-raised-button class="btn-glowing checkout-btn" (click)="onCheckout()">
-                  <mat-icon>payment</mat-icon> Proceed to Checkout
-                </button>
-
-                <button mat-outlined-button color="warn" class="clear-btn" (click)="onClearCart()" [disabled]="actionLoading">
-                  <mat-icon>delete_sweep</mat-icon> Clear Shopping Cart
+                <!-- Delete Action -->
+                <button mat-icon-button color="warn" (click)="removeItem(item)" [disabled]="actionLoading" matTooltip="Remove item" class="delete-btn">
+                  <mat-icon>delete_outline</mat-icon>
                 </button>
               </div>
             </div>
           </div>
+
+          <!-- Order Summary Sidebar -->
+          <div class="summary-card glass-panel">
+            <h3 class="summary-title text-gradient-cyan">Order Summary</h3>
+
+            <div class="summary-body">
+              <div class="summary-line">
+                <span>Total Items</span>
+                <strong>{{ cart.totalItems }} units</strong>
+              </div>
+
+              <div class="summary-divider"></div>
+
+              <div class="summary-line total-line">
+                <span>Total Amount</span>
+                <strong class="total-price text-gradient-cyan">{{ cart.totalAmount | currency:'USD':'symbol':'1.2-2' }}</strong>
+              </div>
+
+              <!-- Checkout Action -->
+              <button mat-raised-button class="btn-glowing checkout-btn" (click)="onCheckout()">
+                <mat-icon>payment</mat-icon> Proceed to Checkout
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -166,8 +140,8 @@ import { CheckoutDialogComponent } from './checkout-dialog/checkout-dialog.compo
       gap: 24px;
     }
 
-    .cart-header {
-      margin-bottom: 8px;
+    .cart-page-header {
+      margin-bottom: 4px;
     }
 
     .page-title {
@@ -183,12 +157,13 @@ import { CheckoutDialogComponent } from './checkout-dialog/checkout-dialog.compo
       font-size: 32px;
       width: 32px;
       height: 32px;
-      color: var(--accent-cyan);
+      color: #38bdf8;
     }
 
     .page-subtitle {
       margin: 4px 0 0 0;
       color: var(--text-muted);
+      font-size: 0.9rem;
     }
 
     .loading-container {
@@ -197,167 +172,251 @@ import { CheckoutDialogComponent } from './checkout-dialog/checkout-dialog.compo
       padding: 60px;
     }
 
-    /* Empty Cart State */
+    /* Empty Cart View */
     .empty-cart-card {
-      padding: 60px 24px;
+      padding: 56px 24px;
+      max-width: 540px;
+      margin: 20px auto;
       text-align: center;
     }
 
-    .empty-icon-circle {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px auto;
-    }
-
     .empty-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-      color: var(--accent-pink);
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #38bdf8;
+      margin-bottom: 16px;
     }
 
-    .cart-layout {
-      display: flex;
+    .empty-content h2 {
+      margin: 0 0 8px 0;
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .empty-content p {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+    }
+
+    .explore-btn {
+      padding: 0 24px;
+      height: 44px;
+    }
+
+    /* Active Cart Layout */
+    .cart-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.8fr);
       gap: 24px;
-      flex-wrap: wrap;
     }
 
-    .cart-items-section {
-      flex: 3;
-      min-width: 340px;
-      padding: 16px;
-      overflow-x: auto;
+    .cart-items-card {
+      padding: 20px;
     }
 
-    .product-info {
+    .card-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 14px;
-      margin: 8px 0;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--glass-border-subtle);
+      margin-bottom: 16px;
     }
 
-    .item-thumb {
-      width: 54px;
-      height: 54px;
-      object-fit: cover;
+    .card-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .clear-all-btn {
+      font-size: 0.8rem;
+    }
+
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .cart-item-row {
+      display: grid;
+      grid-template-columns: 56px 1.5fr auto 110px 40px;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--glass-border-subtle);
+      transition: all 0.2s ease;
+    }
+
+    .cart-item-row:hover {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: var(--glass-border-glow);
+    }
+
+    .item-img {
+      width: 56px;
+      height: 56px;
       border-radius: 10px;
-      border: 1px solid var(--glass-border);
+      object-fit: cover;
     }
 
-    .product-name {
+    .item-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-name {
+      margin: 0;
+      font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-main);
     }
 
-    .product-slug {
-      font-size: 0.75rem;
+    .item-unit-price {
+      font-size: 0.8rem;
       color: var(--text-muted);
-    }
-
-    .price-cell {
       font-weight: 600;
-      color: var(--text-muted);
     }
 
-    .quantity-controls {
-      display: flex;
+    /* Quantity Picker - Perfectly Centered Alignment */
+    .quantity-picker {
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 4px;
+      padding: 3px 6px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
     }
 
     .qty-btn {
-      color: var(--accent-cyan);
-      background: rgba(255, 255, 255, 0.05);
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 6px !important;
+      color: #334155 !important;
+      line-height: 1 !important;
     }
 
-    .quantity-value {
-      font-weight: 800;
-      min-width: 24px;
+    .qty-btn ::ng-deep .mat-icon,
+    .qty-btn mat-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      line-height: 18px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 !important;
+    }
+
+    .qty-val {
+      min-width: 28px;
       text-align: center;
-      font-size: 1rem;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
 
-    .subtotal-cell {
-      font-weight: 800;
+    .subtotal-box {
+      text-align: right;
+    }
+
+    .subtotal-price {
       font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .delete-btn {
+      color: #94a3b8;
+    }
+
+    .delete-btn:hover {
+      color: #ef4444;
     }
 
     /* Summary Sidebar */
-    .cart-summary-section {
-      flex: 1;
-      min-width: 300px;
+    .summary-card {
       padding: 24px;
       height: fit-content;
+      position: sticky;
+      top: 90px;
     }
 
     .summary-title {
-      margin: 0 0 20px 0;
-      font-size: 1.25rem;
+      margin: 0 0 16px 0;
+      font-size: 1.2rem;
       font-weight: 800;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--glass-border-subtle);
     }
 
-    .summary-content {
+    .summary-body {
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
 
-    .summary-row {
+    .summary-line {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: var(--text-muted);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
     }
 
-    .summary-val {
+    .summary-line strong {
       color: var(--text-main);
-      font-size: 1.1rem;
-    }
-
-    .free-shipping {
-      color: var(--accent-emerald);
-      font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.95rem;
     }
 
     .summary-divider {
       height: 1px;
-      background: rgba(255, 255, 255, 0.1);
-      margin: 6px 0;
+      background: var(--glass-border-subtle);
+      margin: 2px 0;
     }
 
-    .total-row {
-      font-size: 1.1rem;
-      font-weight: 700;
+    .total-line span {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--text-main);
     }
 
-    .total-amount {
-      font-size: 1.5rem;
+    .total-price {
+      font-size: 1.6rem;
       font-weight: 900;
-    }
-
-    .summary-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 16px;
     }
 
     .checkout-btn {
       width: 100%;
       height: 48px;
       font-size: 1rem !important;
+      margin-top: 8px;
     }
 
-    .clear-btn {
-      width: 100%;
-      border-color: rgba(248, 113, 113, 0.4) !important;
+    @media (max-width: 900px) {
+      .cart-grid {
+        grid-template-columns: 1fr;
+      }
+      .summary-card {
+        position: static;
+      }
     }
   `]
 })
@@ -365,7 +424,6 @@ export class CartComponent implements OnInit {
   cart: Cart | null = null;
   loading = false;
   actionLoading = false;
-  displayedColumns = ['image', 'price', 'quantity', 'subtotal', 'actions'];
 
   constructor(
     private cartService: CartService,
@@ -430,8 +488,8 @@ export class CartComponent implements OnInit {
   onClearCart(): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
-        title: 'Clear Cart',
-        message: 'Are you sure you want to remove all items from your shopping cart?'
+        title: 'Clear Shopping Cart',
+        message: 'Are you sure you want to remove all items from your shopping bag?'
       }
     });
 

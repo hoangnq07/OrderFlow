@@ -12,7 +12,9 @@ export interface OrderItem {
 export interface Order {
   id: number;
   userId: number;
+  username?: string;
   userEmail: string;
+  shippingAddress?: string;
   totalAmount: number;
   status: OrderStatus;
   note?: string;

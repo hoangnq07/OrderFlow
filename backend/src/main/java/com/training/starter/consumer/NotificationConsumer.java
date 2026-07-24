@@ -18,18 +18,23 @@ public class NotificationConsumer {
 
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
     public void sendOrderConfirmationEmail(OrderCreatedEvent event) {
-        log.info("Received Notification Event: eventId={}, orderId={}, userId={}",
-                event.eventId(), event.orderId(), event.userId());
+        log.info("Received Notification Event: eventId={}, orderId={}, userId={}, email={}",
+                event.eventId(), event.orderId(), event.userId(), event.userEmail());
 
         try {
+            String recipientEmail = (event.userEmail() != null && !event.userEmail().isBlank())
+                    ? event.userEmail()
+                    : "user" + event.userId() + "@example.com";
+
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom("noreply@orderflow.com");
-            message.setTo("user" + event.userId() + "@example.com");
+            message.setTo(recipientEmail);
             message.setSubject("Order Confirmation - Order #" + event.orderId());
 
             StringBuilder body = new StringBuilder();
             body.append("Thank you for your order!\n\n");
             body.append("Order ID: ").append(event.orderId()).append("\n");
+            body.append("Customer Email: ").append(recipientEmail).append("\n");
             body.append("Total Amount: $").append(event.totalAmount()).append("\n\n");
             body.append("Items Ordered:\n");
 
@@ -44,7 +49,7 @@ public class NotificationConsumer {
             message.setText(body.toString());
 
             mailSender.send(message);
-            log.info("Order confirmation email sent successfully for orderId={}", event.orderId());
+            log.info("Order confirmation email sent successfully to {} for orderId={}", recipientEmail, event.orderId());
         } catch (Exception e) {
             log.error("Failed to send order confirmation email for orderId={}: {}", event.orderId(), e.getMessage(), e);
         }
