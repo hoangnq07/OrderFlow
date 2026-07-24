@@ -1,10 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProductResponse } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
@@ -16,11 +19,14 @@ import { NotificationService } from '../../../core/services/notification.service
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
+    MatInputModule,
+    MatFormFieldModule,
     MatProgressSpinnerModule
   ],
   template: `
@@ -31,6 +37,26 @@ import { NotificationService } from '../../../core/services/notification.service
           <span class="eyebrow">Storefront Collection</span>
           <h1 class="page-title">Featured Storefront Catalog</h1>
           <p class="page-subtitle">Discover premium items crafted for seamless order processing</p>
+        </div>
+
+        <!-- Search Bar Component -->
+        <div class="search-bar-container">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search products...</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="searchQuery"
+              (keyup.enter)="onSearch()"
+              placeholder="e.g. Laptop, Mouse..."
+            />
+            <button *ngIf="searchQuery" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+            <button matSuffix mat-icon-button (click)="onSearch()" aria-label="Search">
+              <mat-icon class="search-icon">search</mat-icon>
+            </button>
+          </mat-form-field>
         </div>
       </div>
 
@@ -58,7 +84,7 @@ import { NotificationService } from '../../../core/services/notification.service
 
                   <div class="price-stock-row">
                     <div class="price-tag">
-                      {{ product.price | currency:'USD':'symbol':'1.2-2' }}
+                      \${{ product.price | number:'1.2-2' }}
                     </div>
 
                     <div class="stock-indicator" [class.in-stock]="product.stock > 0" [class.out-of-stock]="product.stock <= 0">
@@ -79,8 +105,9 @@ import { NotificationService } from '../../../core/services/notification.service
             </div>
           } @empty {
             <div class="empty-state surface-card">
-              <mat-icon class="empty-icon">inventory</mat-icon>
-              <h3>No products found in storefront</h3>
+              <mat-icon class="empty-icon">search_off</mat-icon>
+              <h3>No products found matching "{{ searchQuery }}"</h3>
+              <button mat-button color="primary" (click)="clearSearch()" *ngIf="searchQuery">Clear Search Filter</button>
             </div>
           }
         </div>
@@ -133,6 +160,19 @@ import { NotificationService } from '../../../core/services/notification.service
       margin: 4px 0 0 0;
       color: var(--text-muted);
       font-size: 0.95rem;
+    }
+
+    .search-bar-container {
+      min-width: 300px;
+    }
+
+    .search-field {
+      width: 100%;
+      margin-bottom: -1.25em;
+    }
+
+    .search-icon {
+      color: #4f46e5;
     }
 
     /* Storefront Grid & Solid Cards */
@@ -271,6 +311,7 @@ export class ProductListComponent implements OnInit {
   totalElements = 0;
   pageSize = 8;
   currentPage = 0;
+  searchQuery = '';
   loading = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -287,7 +328,11 @@ export class ProductListComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    this.productService.getProducts(this.currentPage, this.pageSize).subscribe({
+    const request$ = (this.searchQuery && this.searchQuery.trim().length > 0)
+      ? this.productService.searchProducts(this.searchQuery.trim(), this.currentPage, this.pageSize)
+      : this.productService.getProducts(this.currentPage, this.pageSize);
+
+    request$.subscribe({
       next: (res) => {
         this.loading = false;
         if (res.success && res.data) {
@@ -300,6 +345,23 @@ export class ProductListComponent implements OnInit {
         this.notification.error('Failed to load product catalog');
       }
     });
+  }
+
+  onSearch(): void {
+    this.currentPage = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
+    this.loadProducts();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.currentPage = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
+    this.loadProducts();
   }
 
   onAddToCart(product: ProductResponse): void {

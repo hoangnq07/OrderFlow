@@ -34,6 +34,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> search(String query, Pageable pageable) {
+        if (query == null || query.isBlank()) {
+            return getAll(pageable);
+        }
+        return productRepository.searchProducts(query.trim(), pageable).map(productMapper::toResponse);
+    }
+
+    @Override
     @Cacheable(value = "products", key = "#id")
     @Transactional(readOnly = true)
     public ProductResponse getById(Long id) {
