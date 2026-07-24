@@ -36,7 +36,7 @@ import { Observable } from 'rxjs';
       <header class="glass-navbar">
         <div class="nav-container">
           <!-- Brand Logo -->
-          <a routerLink="/dashboard" class="brand-logo">
+          <a routerLink="/products" class="brand-logo">
             <div class="logo-icon"><mat-icon>layers</mat-icon></div>
             <div class="logo-brand-wrap">
               <span class="logo-text">OrderFlow</span>
@@ -46,7 +46,7 @@ import { Observable } from 'rxjs';
 
           <!-- Nav Links -->
           <nav class="nav-links">
-            <a routerLink="/dashboard" routerLinkActive="active-link" class="nav-item">
+            <a *ngIf="authService.getRole() === 'ADMIN'" routerLink="/admin/dashboard" routerLinkActive="active-link" class="nav-item">
               <mat-icon>dashboard</mat-icon>
               <span>Dashboard</span>
             </a>
@@ -102,7 +102,7 @@ import { Observable } from 'rxjs';
                 <mat-icon>receipt_long</mat-icon>
                 <span>My Orders</span>
               </button>
-              <button *ngIf="authService.getRole() === 'ADMIN'" mat-menu-item routerLink="/admin/orders">
+              <button *ngIf="authService.getRole() === 'ADMIN'" mat-menu-item routerLink="/admin/dashboard">
                 <mat-icon>dashboard_customize</mat-icon>
                 <span>Admin Dashboard</span>
               </button>
@@ -132,7 +132,7 @@ import { Observable } from 'rxjs';
             <span>•</span>
             <a routerLink="/cart">Cart</a>
             <span>•</span>
-            <a routerLink="/dashboard">System Metrics</a>
+            <a *ngIf="authService.getRole() === 'ADMIN'" routerLink="/admin/dashboard">Admin Portal</a>
           </div>
         </div>
       </footer>

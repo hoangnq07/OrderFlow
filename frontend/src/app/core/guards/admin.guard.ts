@@ -10,6 +10,6 @@ export const adminGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/dashboard']);
+  router.navigate(['/products']);
   return false;
 };

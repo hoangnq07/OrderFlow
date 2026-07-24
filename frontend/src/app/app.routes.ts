@@ -9,11 +9,7 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
-      },
+      { path: '', redirectTo: 'products', pathMatch: 'full' },
       {
         path: 'products',
         loadComponent: () => import('./features/products/product-list/product-list.component').then(m => m.ProductListComponent)
@@ -33,35 +29,44 @@ export const routes: Routes = [
     ]
   },
 
-  // Admin Command Center Routes (Dark Slate Glass Portal)
+  // Admin Command Center Routes (Light 3D Glassmorphic Portal)
   {
     path: '',
     loadComponent: () => import('./layout/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     canActivate: [authGuard, adminGuard],
     children: [
+      { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
       {
-        path: 'products/new',
+        path: 'admin/dashboard',
+        loadComponent: () => import('./features/dashboard/admin-dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'admin/products',
+        loadComponent: () => import('./features/admin/products/admin-product-list/admin-product-list.component').then(m => m.AdminProductListComponent)
+      },
+      {
+        path: 'admin/products/new',
         loadComponent: () => import('./features/products/product-form/product-form.component').then(m => m.ProductFormComponent)
       },
       {
-        path: 'products/:id/edit',
+        path: 'admin/products/:id/edit',
         loadComponent: () => import('./features/products/product-form/product-form.component').then(m => m.ProductFormComponent)
-      },
-      {
-        path: 'users',
-        loadComponent: () => import('./features/users/user-list/user-list.component').then(m => m.UserListComponent)
-      },
-      {
-        path: 'users/new',
-        loadComponent: () => import('./features/users/user-form/user-form.component').then(m => m.UserFormComponent)
-      },
-      {
-        path: 'users/:id/edit',
-        loadComponent: () => import('./features/users/user-form/user-form.component').then(m => m.UserFormComponent)
       },
       {
         path: 'admin/orders',
         loadComponent: () => import('./features/admin/orders/admin-order-list/admin-order-list.component').then(m => m.AdminOrderListComponent)
+      },
+      {
+        path: 'admin/users',
+        loadComponent: () => import('./features/users/user-list/user-list.component').then(m => m.UserListComponent)
+      },
+      {
+        path: 'admin/users/new',
+        loadComponent: () => import('./features/users/user-form/user-form.component').then(m => m.UserFormComponent)
+      },
+      {
+        path: 'admin/users/:id/edit',
+        loadComponent: () => import('./features/users/user-form/user-form.component').then(m => m.UserFormComponent)
       }
     ]
   },
